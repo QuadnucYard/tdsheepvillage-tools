@@ -1,0 +1,199 @@
+<html>
+
+<head>
+    <title>TDSheepVillage Tools</title>
+    <link rel="icon" href="image/icon.jpg" type="image/x-icon">
+
+    <link href="css/style.css" rel="stylesheet">
+    <link href="css/normalize.css" rel="stylesheet">
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.5.1.min.js"></script>
+    <script src="https://underscorejs.net/underscore-min.js"></script>
+    <script src="exscore.js"></script>
+    <script src="utils.js"></script>
+    <script src="config.js"></script>
+    <script src="config_funcs.js"></script>
+</head>
+
+<body>
+    <aside>
+        <div class="header">羊村数据小工具</div>
+        <ul>
+            <li><a data-section="towers">塔数据</a></li>
+            <li><a data-section="umap-wolf">前线地图的狼</a></li>
+        </ul>
+    </aside>
+    <script>
+        // 数据加载
+        let tower = new Tower("shaota");
+        tower.level = 50;
+        //console.log(tower.buildCost(), tower.buffEffect(), tower.power, tower.ability, tower.valueCost(), tower.valueCostConst());
+        tower.gem = new GemItem("lv4");
+
+        $("aside ul").click(function(e) {
+            if (e.target.tagName=="A") {
+                switchSection(e.target.getAttribute("data-section"));
+            }
+        });
+        
+
+        function switchSection(secid) {
+            $(`aside a[data-section="${secid}"]`).parent().addClass("active").siblings().removeClass("active");
+            $(`section[data-section="${secid}"]`).removeClass("hide").siblings().addClass("hide");
+        }
+    </script>
+
+    <div class="section-container">
+
+        <section data-section="towers" class="hide">
+            <form>
+                <h1>防御塔数据</h1>
+                <label>塔</label>
+                <select name="tower-id"></select>
+                <br>
+                <label>等级上限 </label><label name="lev_max"></label>
+                <br>
+                <label>等级</label>
+                <input name="level" type="number" min=1 max=100 value=1>
+                <br>
+                <label>攻击力 </label><label name="damage"></label>
+                <label>攻击频率 </label><label name="rate"></label>
+                <label>攻击范围 </label><label name="range"></label>
+                <br>
+                <label>ability </label><label name="ability"></label>
+                <br>
+                <label>power </label><label name="power"></label>
+                <br>
+                <label>buildValue </label><label name="buildValue"></label>
+                <br>
+                <label>buildCost </label><label name="buildCost"></label>
+                <br>
+                <label>valueCost </label><label name="valueCost"></label>
+                <br>
+                <label>buffEffect </label><label name="buffEffect"></label>
+            </form>
+            <script>
+                !function () {
+                    let $this = $('[data-section="towers"]');
+
+                    $this.find('[name="tower-id"]').html(
+                        _.map(config["building"]["tower"], (t, k) => [k, t["name"]])
+                            .maps(t => `<option value=${t[0]}>${t[1]}</option>`)
+                    );
+
+                    $this.find('[name="tower-id"], [name="level"]').change(showData);
+
+                    showData();
+
+                    function showData() {
+                        let $this = $('[data-section="towers"]');
+
+                        let tower_id = $this.find('[name="tower-id"] option:selected').val();
+                        let level = parseInt($this.find('[name="level"]').val());
+
+                        let towerData = config["building"]["tower"][tower_id];
+                        let tower = new Tower(tower_id);
+                        tower.level = level;
+
+                        $this.find('[name="lev_max"]').text(tower.towerData.levelMax);
+                        $this.find('[name="damage"]').text(tower.damage());
+                        $this.find('[name="rate"]').text(tower.rate);
+                        $this.find('[name="range"]').text(tower.range);
+                        $this.find('[name="ability"]').text(tower.ability);
+                        $this.find('[name="power"]').text(tower.power);
+                        $this.find('[name="buildValue"]').text(tower.buildValue());
+                        $this.find('[name="buildCost"]').text(tower.buildCost());
+                        $this.find('[name="valueCost"]').text(tower.valueCost());
+                        $this.find('[name="buffEffect"]').text(tower.buffEffect());
+                    }
+                }();
+            </script>
+        </section>
+
+        <section data-section="umap-wolf" class="hide">
+            <form>
+                <h1>前线地图的狼</h1>
+                <label>地图</label>
+                <select name="umap-id"></select>
+                <label name="umap-diff">难度系数：</label>
+                <br>
+                <label>狼</label>
+                <select name="wolf"></select>
+                <label name="hp-factor">血量系数：</label>
+                <br>
+                <label>进度</label>
+                <input name="score" type="number" min=0 value=0>
+                <label name="pass-score">通关进度：</label>
+                <br>
+                <label>难度</label>
+                <select name="diff">
+                    <option value=0.8>小菜一碟</option>
+                    <option value=0.9>轻而易举</option>
+                    <option value=1.0>势均力敌</option>
+                    <option value=1.1>有惊无险</option>
+                    <option value=1.2>稍有难度</option>
+                    <option value=1.3>困难重重</option>
+                </select>
+                <br>
+                <label>等级：</label><label name="level"></label>
+                <label>最大血量：</label><label name="hpMax"></label>
+            </form>
+
+            <script>
+                !function () {
+                    let $this = $('[data-section="umap-wolf"]');
+
+                    //console.log(parseInt(/(?<=m).+(?=[A-Z]*)/.exec("m9C")[0],20));
+
+                    $this.find('[name="umap-id"]').html(
+                        _.map(config["umaps"], (t, k) => [k, t["name"]]).sort((p1, p2) => {
+                            return compareNumber(
+                                parseInt(/(?<=m).+(?=[A-Z]*)/.exec(isAlpha(p1[0].last()) ? p1[0] : p1[0] + "A")[0], 36),
+                                parseInt(/(?<=m).+(?=[A-Z]*)/.exec(isAlpha(p2[0].last()) ? p2[0] : p2[0] + "A")[0], 36),
+                            );
+                        }).maps(t => `<option value=${t[0]}>${t[0]} ${t[1]}</option>`)
+                    );
+
+                    $this.find('[name="wolf"]').html(
+                        _.map(_.map(config["wolfs"], (t, k) => [k, t["name"]])
+                            .groupBy(t => t[1].includes("camp") ? "防线" : (t[0].includes("D_") ? "噩梦" : "前线"))
+                            , (t, k) => `<optgroup label="${k}">${t.sortBy(0).maps(s => `<option value=${s[0]}>${s[1].includes("^") ? s[1].takeFrom("^", 1) : s[1]
+                                }</option>`)
+                                }</optgroup>`)
+                    );
+
+                    $this.find('[name="umap-id"], [name="wolf"], [name="diff"], [name="score"]').change(calc);
+                    calc();
+
+                    function calc() {
+                        let $this = $('[data-section="umap-wolf"]');
+                        let umap_id = $this.find('[name="umap-id"] option:selected').val();
+                        let wolf_id = $this.find('[name="wolf"] option:selected').val();
+                        let diff = $this.find('[name="diff"] option:selected').val();
+                        let score = $this.find('[name="score"]').val();
+
+                        let hardA = config["umaps"][umap_id]["yield_val"];
+                        let hardB = config["umaps"][umap_id]["hard_ness"];
+                        let ha = config["wolfs"][wolf_id]["hp_factor"]["a"];
+                        let hb = config["wolfs"][wolf_id]["hp_factor"]["b"];
+                        let hc = config["wolfs"][wolf_id]["hp_factor"]["c"];
+
+                        let level = Math.sqrt(hardA + hardB * score);
+                        let hpMax = ((hc * level + hb) * level + ha) * diff;
+
+                        $this.find('[name="umap-diff"]').text(`${hardA}, ${hardB}`);
+                        $this.find('[name="hp-factor"]').text(`${ha}, ${hb}, ${hc}`);
+                        $this.find('[name="pass-score"]').text(`${config["umaps"][umap_id]["pass_score"]}`);
+                        $this.find('[name="level"]').text(level.toFixed(2));
+                        $this.find('[name="hpMax"]').text(Math.floor(hpMax));
+
+                        //console.log(hpMax);
+                    }
+                }();
+
+            </script>
+        </section>
+    </div>
+
+</body>
+
+</html>
