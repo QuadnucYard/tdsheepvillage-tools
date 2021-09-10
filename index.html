@@ -45,31 +45,39 @@
     <div class="section-container">
 
         <section data-section="towers" class="hide">
-            <form>
+            <form style="cursor: default;">
                 <h1>防御塔数据</h1>
                 <label>塔</label>
                 <select name="tower-id"></select>
                 <br>
-                <label>等级上限 </label><label name="lev_max"></label>
+                <label>等级上限：<label name="lev_max"></label></label>
                 <br>
-                <label>等级</label>
+                <label>等级：</label>
                 <input name="level" type="number" min=1 max=100 value=1>
                 <br>
-                <label>攻击力 </label><label name="damage"></label>
-                <label>攻击频率 </label><label name="rate"></label>
-                <label>攻击范围 </label><label name="range"></label>
+                <label>攻击力：<label name="damage"></label></label>&emsp;
+                <label>攻击频率：<label name="rate"></label></label>&emsp;
+                <label>攻击范围：<label name="range"></label></label>&emsp;
                 <br>
-                <label>ability </label><label name="ability"></label>
+                <label>ability: <label name="ability"></label></label>
                 <br>
-                <label>power </label><label name="power"></label>
+                <label>power: <label name="power"></label></label>
                 <br>
-                <label>buildValue </label><label name="buildValue"></label>
+                <label>buildValue: <label name="buildValue"></label></label>
                 <br>
-                <label>buildCost </label><label name="buildCost"></label>
+                <label>buildCost: <label name="buildCost"></label></label>
                 <br>
-                <label>valueCost </label><label name="valueCost"></label>
+                <label>valueCost: <label name="valueCost"></label></label>
                 <br>
-                <label>buffEffect </label><label name="buffEffect"></label>
+                <label>buffEffect: <label name="buffEffect"></label></label>
+                <br>
+                <br>
+                <h2>升级计算</h2>
+                从<input name="build-from" type="number" min=1 style="width: 3em;" value="0">级到<input name="build-to" type="number" min=1 style="width: 3em;" value="1">级
+                <br>
+                苦工总力量：<input name="build-power" type="number" min=1 style="width: 5em;" value=1>
+                <br>
+                需要时间：<label name="build-time">NaN</label>
             </form>
             <script>
                 !function () {
@@ -81,8 +89,10 @@
                     );
 
                     $this.find('[name="tower-id"], [name="level"]').change(showData);
+                    $this.find('[name="build-from"], [name="build-to"], [name="build-power"]').change(calcBuildTime);
 
                     showData();
+                    calcBuildTime();
 
                     function showData() {
                         let $this = $('[data-section="towers"]');
@@ -104,6 +114,28 @@
                         $this.find('[name="buildCost"]').text(tower.buildCost());
                         $this.find('[name="valueCost"]').text(tower.valueCost());
                         $this.find('[name="buffEffect"]').text(tower.buffEffect());
+                    }
+
+                    function calcBuildTime() {
+                        let $this = $('[data-section="towers"]');
+
+                        let tower_id = $this.find('[name="tower-id"] option:selected').val();
+                        let buildFrom = parseInt($this.find('[name="build-from"]').val());
+                        let buildTo = parseInt($this.find('[name="build-to"]').val());
+                        let buildPower = parseInt($this.find('[name="build-power"]').val());
+                        
+                        if (buildFrom>=buildTo) {
+                            $this.find('[name="build-time"]').text("NaN");
+                            return;
+                        }
+                        
+                        let tower = new Tower(tower_id);
+                        let buildTime=0;
+                        for (let i=buildFrom+1;i<=buildTo;i++) {
+                            buildTime+=tower.buildValue(i);
+                        }
+                        buildTime=Math.round(buildTime/buildPower);
+                        $this.find('[name="build-time"]').text(`${Math.floor(buildTime/3600)}:${Math.floor(buildTime%3600/60)}:${buildTime%60}`);
                     }
                 }();
             </script>
