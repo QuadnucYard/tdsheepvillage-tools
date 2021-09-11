@@ -8,7 +8,7 @@ aside {
     top: 0;
     bottom: 0;
     left: 0;
-    width: 15em;
+    width: 10em;
     margin-left: 0;
     display: block;
     background-color: #f1f1f1;
@@ -61,11 +61,11 @@ aside ul li.active {
 }
 
 .section-container {
-    margin-left: 15em;
+    margin-left: 10em;
 }
 
 section {
-    padding: 2em;
+    padding: 4em;
     line-height: 200%;
 }
 
@@ -80,6 +80,7 @@ section h1 {
 table {
     border-collapse: collapse;
     border-spacing: 0;
+    line-height: 115%;
 }
 
 td,
@@ -126,11 +127,19 @@ th {
     background-color: #f2f2f2;
 }
 
-.pure-table td:not(:last-child) {
+.pure-table td {
     text-align: center;
+}
+
+[data-section="wolfs"] .pure-table td:last-child {
+    text-align: left;
 }
 
 .pure-table td {
     white-space: nowrap;
+}
+
+.pure-table td.align-left {
+    text-align: left;
 }
 

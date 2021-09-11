@@ -1,5 +1,6 @@
+// 改了一下，selector 为表格的 selector
 function sortTable(selector, compFunc) {
-    var mySelector = '.sortable';
+    var mySelector = '';
     var myCompFunc = function ($td1, $td2, isAsc) {
         var v1 = $.trim($td1.text()).replace(/,|\s+|%/g, '');
         var v2 = $.trim($td2.text()).replace(/,|\s+|%/g, '');
@@ -30,7 +31,7 @@ function sortTable(selector, compFunc) {
     }
 
     var init = function () {
-        var $th = $("th" + selector);
+        var $th = $(selector+" th.sortable");
         this.$table = $th.closest("table");
         var that = this;
         $th.click(function () {
@@ -44,7 +45,7 @@ function sortTable(selector, compFunc) {
         });
 
         $th.css({ 'cursor': 'pointer' })
-            .attr('title', '点击排序')
+            //.attr('title', '点击排序')
             .append('&nbsp;<i class="fa fa-long-arrow-down" style="color:#2196F3" aria-hidden="true"></i><i class="fa fa-long-arrow-up" style="color:#2196F3" aria-hidden="true"></i>');
     };
 

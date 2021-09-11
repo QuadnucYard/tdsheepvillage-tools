@@ -4,7 +4,13 @@ var isDefendMap = false;
 const GlobalData = {
     $_global_properties: config.properties,
     $_tower_worth_factor: config["camp_system_simple"]["tower_worth_factor"],
-    $_towerAtt_Obj: config.building["tower"]
+    $_towerAtt_Obj: config.building["tower"],
+    umapsById: _.map(config["umaps"], (t, k) => [k, t]).sort((p1, p2) => {
+        return compareNumber(
+            parseInt(/(?<=m).+(?=[A-Z]*)/.exec(isAlpha(p1[0].last()) ? p1[0] : p1[0] + "A")[0], 36),
+            parseInt(/(?<=m).+(?=[A-Z]*)/.exec(isAlpha(p2[0].last()) ? p2[0] : p2[0] + "A")[0], 36),
+        );
+    }),
 };
 
 class BaseManager {
