@@ -143,3 +143,7 @@ th {
     text-align: left;
 }
 
+.pure-table th.sortable {
+    user-select: none;
+}
+

@@ -72,6 +72,8 @@
         <section data-section="towers" class="hide">
             <form style="cursor: default;">
                 <h1>防御塔数据</h1>
+                <label>是否为防线：<input type="checkbox" name="isDefendMap"></label>
+                <br>
                 <label>塔</label>
                 <select name="tower-id"></select>
                 <br>
@@ -104,6 +106,8 @@
                 苦工总力量：<input name="build-power" type="number" min=1 style="width: 5em;" value=1>
                 <br>
                 需要时间：<label name="build-time">NaN</label>
+                <br>
+                <p>注：升级经验为塔下一级的 buildValue 值</p>
             </form>
             <script>
                 !function () {
@@ -114,17 +118,19 @@
                             .maps(t => `<option value=${t[0]}>${t[1]}</option>`)
                     );
 
-                    $this.find('[name="tower-id"], [name="level"]').change(showData);
-                    $this.find('[name="tower-id"], [name="build-from"], [name="build-to"], [name="build-power"]').change(calcBuildTime);
+                    $this.find('[name="isDefendMap"], [name="tower-id"], [name="level"]').change(showData);
+                    $this.find('[name="isDefendMap"], [name="build-from"], [name="build-to"], [name="build-power"]').change(calcBuildTime);
 
                     showData();
                     calcBuildTime();
 
                     function showData() {
                         let $this = $('[data-section="towers"]');
-
+                        
                         let tower_id = $this.find('[name="tower-id"] option:selected').val();
                         let level = parseInt($this.find('[name="level"]').val());
+
+                        isDefendMap = $this.find('[name="isDefendMap"]').prop("checked");
 
                         let towerData = config["building"]["tower"][tower_id];
                         let tower = new Tower(tower_id);
@@ -178,7 +184,7 @@
                             <th class="sortable">speed</th>
                             <th class="sortable">pop</th>
                             <th class="sortable">charm</th>
-                            <th class="sortable">hp_factor</th>
+                            <th>hp_factor</th>
                             <th>skills</th>
                         </tr>
                     </thead>
@@ -224,7 +230,7 @@
                             <th class="sortable" title="狼出场规则">unkennel<br>rule</th>
                             <th class="sortable" title="传送规则">teleport<br>rule</th>
                             <th title="关卡狼列表（方括号中为pop数）">monsterList</th>
-                            <th title="随机Boss列表（方括号中为pop数）">randomBoss</th>
+                            <th title="随机Boss列表（花括号中显示难度和对应的奖励）">randomBoss</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -249,11 +255,11 @@
                             <td>${t?.teleport_rule || ""}</td>
                             <td class="align-left">${t.wolf_proportion.map(t => config["wolfs"][t[1]]).map(t => `${t.name}[${t.pop}]`).join(", ")}</td>
                             <td class="align-left">${_.map(t.random_boss?.map(t =>
-                                 [config["wolfs"][t[1]].name, t[2], Object.entries( t[3].properties.card)[0]]).groupBy(0), (t,k)=> 
-                                     `${k}{${t.maps(u=> `${u[1]},${config.properties.card[u[2][0]].name.takeFrom('^',1)}*${u[2][1]}` ,"; ")}}`
-                                 
-                                 ).join(", ") || ""
-                                }</td>
+                            [config["wolfs"][t[1]].name, t[2], Object.entries(t[3].properties.card)[0]]).groupBy(0), (t, k) =>
+                            `${k}{${t.maps(u => `${u[1]},${config.properties.card[u[2][0]].name.takeFrom('^', 1)}*${u[2][1]}`, "; ")}}`
+
+                        ).join(", ") || ""
+                        }</td>
                         </tr>`
                     )(...t)).join(", "))
                     $(document).ready(() => sortTable('[data-section="umaps"] table'));
