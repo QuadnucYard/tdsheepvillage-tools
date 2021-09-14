@@ -33,6 +33,7 @@
     <aside>
         <div class="header">羊村数据小工具</div>
         <ul>
+            <li><a data-section="user">玩家数据</a></li>
             <li><a data-section="towers">塔数据</a></li>
             <li><a data-section="wolfs">狼数据</a></li>
             <li><a data-section="umaps">地图数据</a></li>
@@ -69,8 +70,41 @@
             </div>
         </section>
 
+        <section data-section="user" class="hide">
+            <div class="content" style="cursor: default;">
+                <h1>玩家数据</h1>
+                <label>等级：<input name="level" type="number" min="1" value="1"></label>
+                <br>
+                <label>升级经验：<label name="max-exp"></label></label>
+                <br>
+                <label>力量：<label name="power"></label></label>
+                <br>
+                <label>连升等级：<label name="upgrade-level"></label></label>
+            </div>
+            <script>
+                !function () {
+                    let $this = $('[data-section="user"]');
+
+                    $this.find('[name="level"]').change(showData);
+
+                    showData();
+
+                    function showData() {
+                        let $this = $('[data-section="user"]');
+
+                        let level = parseInt($this.find('[name="level"]').val());
+
+                        $this.find('[name="max-exp"]').text(((2 * level + 9) * level + 16) * level + 29);
+                        $this.find('[name="power"]').text(Math.round((0.015 * level + 0.8) * level + 2));
+                        $this.find('[name="upgrade-level"]').text(Math.floor(level / 4 + 1));
+                    }
+
+                }();
+            </script>
+        </section>
+
         <section data-section="towers" class="hide">
-            <form style="cursor: default;">
+            <div class="content" style="cursor: default;">
                 <h1>防御塔数据</h1>
                 <label>是否为防线：<input type="checkbox" name="isDefendMap"></label>
                 <br>
@@ -108,7 +142,7 @@
                 需要时间：<label name="build-time">NaN</label>
                 <br>
                 <p>注：升级经验为塔下一级的 buildValue 值</p>
-            </form>
+            </div>
             <script>
                 !function () {
                     let $this = $('[data-section="towers"]');
@@ -126,7 +160,7 @@
 
                     function showData() {
                         let $this = $('[data-section="towers"]');
-                        
+
                         let tower_id = $this.find('[name="tower-id"] option:selected').val();
                         let level = parseInt($this.find('[name="level"]').val());
 
@@ -176,6 +210,11 @@
         <section data-section="wolfs" class="hide">
             <div class="content">
                 <h1>狼数据</h1>
+                <p>前排解释：</p>
+                <p>pop 为狼在一波中占的容量，一般来说 pop 越大则出现机会越少。</p>
+                <p>charm 影响到寻路，charm 为负值越小则其他狼越会排斥它。</p>
+                <p>hp_factor 影响血量关于等级增长，是二次函数系数。</p>
+                <p>目前技能显示供参考，未应用语言文件。</p>
                 <table class="pure-table" style="font-size: smaller;">
                     <thead>
                         <tr>
@@ -215,6 +254,10 @@
         <section data-section="umaps" class="hide">
             <div class="content">
                 <h1>地图数据</h1>
+                <p>前排解释：</p>
+                <p>狼的等级随进度增加而增加。难度系数 hardA 影响初始狼等级，hardB 影响等级增长速率。</p>
+                <p>population 影响一波狼的容量。每只狼都会占用一定容量。</p>
+                <p>不同随机boss有出现权重。出现率、难度、奖励水平是相对应的，难的比较稀有，奖励也会比较好。</p>
                 <table class="pure-table" style="font-size: small;">
                     <thead>
                         <tr>
@@ -229,6 +272,7 @@
                             <th class="sortable" title="狼出场间隔(s)">unkennel<br>delay</th>
                             <th class="sortable" title="狼出场规则">unkennel<br>rule</th>
                             <th class="sortable" title="传送规则">teleport<br>rule</th>
+                            <th title="需要通过">passBy</th>
                             <th title="关卡狼列表（方括号中为pop数）">monsterList</th>
                             <th title="随机Boss列表（花括号中显示难度和对应的奖励）">randomBoss</th>
                         </tr>
@@ -245,14 +289,15 @@
                             <td>${GlobalData.umapsById.findIndex(t => t[0] == k)}</td>
                             <td>${k}</td>
                             <td>${t.name}</td>
-                            <td>${t?.need_lev || 0}</td>
+                            <td>${t.need_lev || 0}</td>
                             <td>${t.pass_score}</td>
                             <td>${t.yield_val}</td>
                             <td>${t.hard_ness}</td>
                             <td>${t.pop_max}</td>
                             <td>${t.interval}</td>
                             <td>${t.interval_rule}</td>
-                            <td>${t?.teleport_rule || ""}</td>
+                            <td>${t.teleport_rule || ""}</td>
+                            <td>${t.pass_by.map(u=>config["umaps"][u].name)}</td>
                             <td class="align-left">${t.wolf_proportion.map(t => config["wolfs"][t[1]]).map(t => `${t.name}[${t.pop}]`).join(", ")}</td>
                             <td class="align-left">${_.map(t.random_boss?.map(t =>
                             [config["wolfs"][t[1]].name, t[2], Object.entries(t[3].properties.card)[0]]).groupBy(0), (t, k) =>
