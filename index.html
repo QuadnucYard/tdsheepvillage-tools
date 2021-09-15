@@ -16,6 +16,7 @@
     <script type="text/javascript" src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.5.1.min.js"></script>
     <script type="text/javascript" src="https://underscorejs.net/underscore-min.js"></script>
     <script type="text/javascript" src="https://cdn.bootcdn.net/ajax/libs/marked/2.1.3/marked.min.js"></script>
+    <script type="text/javascript" src="js/echarts.min.js"></script>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/katex.min.js"></script>
@@ -25,7 +26,7 @@
     <script type="text/javascript" src="utils.js"></script>
     <script type="text/javascript" src="config.js"></script>
     <script type="text/javascript" src="config_funcs.js"></script>
-
+    <script type="text/javascript" src="static/wavegen_freq.js" defer></script>
 
 </head>
 
@@ -201,7 +202,7 @@
                             buildTime += tower.buildValue(i);
                         }
                         buildTime = Math.round(buildTime / buildPower);
-                        $this.find('[name="build-time"]').text(`${Math.floor(buildTime / 3600)}:${Math.floor(buildTime % 3600 / 60)}:${buildTime % 60}`);
+                        $this.find('[name="build-time"]').text(`${Math.floor(buildTime / 3600)}:${pad(Math.floor(buildTime % 3600 / 60).toString(), 2)}:${pad((buildTime % 60).toString(), 2)}`);
                     }
                 }();
             </script>
@@ -297,7 +298,7 @@
                             <td>${t.interval}</td>
                             <td>${t.interval_rule}</td>
                             <td>${t.teleport_rule || ""}</td>
-                            <td>${t.pass_by.map(u=>config["umaps"][u].name)}</td>
+                            <td>${t.pass_by.map(u => config["umaps"][u].name)}</td>
                             <td class="align-left">${t.wolf_proportion.map(t => config["wolfs"][t[1]]).map(t => `${t.name}[${t.pop}]`).join(", ")}</td>
                             <td class="align-left">${_.map(t.random_boss?.map(t =>
                             [config["wolfs"][t[1]].name, t[2], Object.entries(t[3].properties.card)[0]]).groupBy(0), (t, k) =>
@@ -313,7 +314,7 @@
         </section>
 
         <section data-section="umap-wolf" class="hide">
-            <form>
+            <div class="content">
                 <h1>前线地图的狼</h1>
                 <label>地图</label>
                 <select name="umap-id"></select>
@@ -339,10 +340,16 @@
                 <br>
                 <label>等级：</label><label name="level"></label>
                 <label>最大血量：</label><label name="hpMax"></label>
-            </form>
+                <br>
+                <div class="chart-area" style="position: absolute; top: 3em; right: 3em;">
+                    <h2 style="text-align: center;">狼出现频率（按数量）</h2>
+                    <div id="main" style="width: 400px;height:200px;"></div>
+                    <div id="main2" style="width: 400px;height:300px;"></div>
+                </div>
+            </div>
 
             <script>
-                !function () {
+                $(document).ready(() => {
                     let $this = $('[data-section="umap-wolf"]');
 
                     //console.log(parseInt(/(?<=m).+(?=[A-Z]*)/.exec("m9C")[0],20));
@@ -364,7 +371,9 @@
                                 }</optgroup>`)
                     );
 
+                    $this.find('[name="umap-id"]').change(showCharts);
                     $this.find('[name="umap-id"], [name="wolf"], [name="diff"], [name="score"]').change(calc);
+                    showCharts();
                     calc();
 
                     function calc() {
@@ -388,10 +397,90 @@
                         $this.find('[name="pass-score"]').text(`${config["umaps"][umap_id]["pass_score"]}`);
                         $this.find('[name="level"]').text(level.toFixed(2));
                         $this.find('[name="hpMax"]').text(Math.floor(hpMax));
-
-                        //console.log(hpMax);
                     }
-                }();
+
+                    function showCharts() {
+                        const chartOption = {
+                            color: ["#92D050"],
+                            title: { 
+                                left: 'center',
+                                textStyle:{
+                                    fontStyle:'normal',
+                                    fontFamily:'sans-serif',
+                            　　　　 fontSize:14
+                                }
+                            },
+                            tooltip: {},
+                            legend: { show: false },
+                            xAxis: {
+                                type: 'category',
+                                axisTick: { alignWithLabel: true }
+                            },
+                            yAxis: {
+                                type: 'value',
+                                //min: 0.0,
+                                //max: 1.0,
+                                //interval: 0.2,
+                                axisLine: {
+                                    show: true,
+                                    lineStyle: {
+                                        width: 1,
+                                        type: 'solid'
+                                    }
+                                },
+                                axisTick: {
+                                    show: true,
+                                    inside: true,
+                                    length: 3,
+                                    lineStyle: {
+                                        width: 1,
+                                        type: 'solid'
+                                    }
+                                }
+                            },
+                            grid: {
+                                x1: 10,
+                                x2: 10,
+                                y: 10,
+                                y2: 20
+                            },
+                            series: [{
+                                type: 'bar',
+                                barWidth: '90%'
+                            }]
+                        };
+
+                        let $this = $('[data-section="umap-wolf"]');
+                        let mid = $this.find('[name="umap-id"] option:selected').val();
+
+                        let $chartArea = $this.find(".chart-area");
+                        $chartArea.children('div').remove();
+
+                        let wolfs = config["umaps"][mid].wolf_proportion.map(t => t[1]);
+                        let xData = range(0, wavegenFreq[mid].all.length + 1)
+                        for (let i = 0; i < wolfs.length; i++) {
+                            $chartArea.append('<div style="width: 400px;height:100px;"></div>');
+                            let chart = echarts.init($chartArea.children("div:last")[0]);
+                            chart.setOption(chartOption);
+                            chart.setOption({
+                                title: { text: config.wolfs[wolfs[i]].name, },
+                                xAxis: { data: xData },
+                                series: [{ data: wavegenFreq[mid].each[i] }]
+                            });
+                        }
+                        {
+                            $chartArea.append('<div style="width: 400px;height:150px;"></div>');
+                            let chart = echarts.init($chartArea.children("div:last")[0]);
+                            chart.setOption(chartOption);
+                            chart.setOption({
+                                color: ["#FF7F27"],
+                                title: { text: "全部", },
+                                xAxis: { data: xData },
+                                series: [{ data: wavegenFreq[mid].all }]
+                            });
+                        }
+                    }
+                });
 
             </script>
         </section>
