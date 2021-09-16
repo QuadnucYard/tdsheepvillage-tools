@@ -61,12 +61,15 @@ aside ul li.active {
 }
 
 .section-container {
-    margin-left: 10em;
+    position: fixed;
+    overflow: auto;
+    height: 100%;
+    left: 10em;
+    right: 0em;
 }
 
 section {
-    padding: 4em;
-    line-height: 200%;
+    padding: 3em;
 }
 
 section h1 {
@@ -147,3 +150,8 @@ th {
     user-select: none;
 }
 
+.katex {
+    font-size: 1em;
+    text-indent: 0;
+    text-rendering: auto;
+}

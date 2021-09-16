@@ -9,31 +9,40 @@
 
     <link rel="icon" href="image/icon.jpg" type="image/x-icon">
 
-    <link href="css/style.css" rel="stylesheet">
+    <!-- CSS -->
     <link href="css/normalize.css" rel="stylesheet">
+    <link href="css/github.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
     <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
 
+    <!-- Lib -->
     <script type="text/javascript" src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.5.1.min.js"></script>
     <script type="text/javascript" src="https://underscorejs.net/underscore-min.js"></script>
     <script type="text/javascript" src="https://cdn.bootcdn.net/ajax/libs/marked/2.1.3/marked.min.js"></script>
     <script type="text/javascript" src="js/echarts.min.js"></script>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/katex.min.js"></script>
+    <!-- KaTeX -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.12.0/katex.min.css" rel="stylesheet">
+    <script defer src="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.12.0/katex.min.js"></script>
+    <script defer src="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.12.0/contrib/copy-tex.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.12.0/contrib/copy-tex.js"></script>
 
+    <!-- My JS -->
     <script type="text/javascript" src="exscore.js"></script>
     <script type="text/javascript" src="sort_table.js"></script>
     <script type="text/javascript" src="utils.js"></script>
+    <script type="text/javascript" src="format.js"></script>
     <script type="text/javascript" src="config.js"></script>
-    <script type="text/javascript" src="config_funcs.js"></script>
     <script type="text/javascript" src="static/wavegen_freq.js" defer></script>
+    <script type="module" src="js/InitLoad.js"></script>
 
 </head>
 
 <body>
     <aside>
         <div class="header">羊村数据小工具</div>
-        <ul>
+        <ul style="padding-left: 0;">
             <li><a data-section="user">玩家数据</a></li>
             <li><a data-section="towers">塔数据</a></li>
             <li><a data-section="wolfs">狼数据</a></li>
@@ -44,10 +53,6 @@
     </aside>
     <script>
         // 数据加载
-        let tower = new Tower("shaota");
-        tower.level = 50;
-        //console.log(tower.buildCost(), tower.buffEffect(), tower.power, tower.ability, tower.valueCost(), tower.valueCostConst());
-        tower.gem = new GemItem("lv4");
 
         $("aside ul").click(function (e) {
             if (e.target.tagName == "A") {
@@ -55,11 +60,25 @@
             }
         });
 
-
         function switchSection(secid) {
             $(`aside a[data-section="${secid}"]`).parent().addClass("active").siblings().removeClass("active");
             $(`section[data-section="${secid}"]`).removeClass("hide").siblings().addClass("hide");
         }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    { left: "$$", right: "$$", display: true },
+                    { left: "$", right: "$", display: false }
+                ],
+                macros: {
+                    "\\ge": "\\geqslant",
+                    "\\le": "\\leqslant",
+                    "\\geq": "\\geqslant",
+                    "\\leq": "\\leqslant"
+                }
+            });
+        });
 
     </script>
 
@@ -82,8 +101,8 @@
                 <br>
                 <label>连升等级：<label name="upgrade-level"></label></label>
             </div>
-            <script>
-                !function () {
+            <script type="module">
+                $(document).ready(() => {
                     let $this = $('[data-section="user"]');
 
                     $this.find('[name="level"]').change(showData);
@@ -100,7 +119,7 @@
                         $this.find('[name="upgrade-level"]').text(Math.floor(level / 4 + 1));
                     }
 
-                }();
+                });
             </script>
         </section>
 
@@ -112,6 +131,9 @@
                 <label>塔</label>
                 <select name="tower-id"></select>
                 <br>
+                <label>宝石</label>
+                <select name="gem-id"></select>
+                <br>
                 <label>等级上限：<label name="lev_max"></label></label>
                 <br>
                 <label>等级：</label>
@@ -121,17 +143,22 @@
                 <label>攻击频率：<label name="rate"></label></label>&emsp;
                 <label>攻击范围：<label name="range"></label></label>&emsp;
                 <br>
-                <label>ability: <label name="ability"></label></label>
+                <label>升级经验：<label name="expMax"></label></label>
                 <br>
+                <label>技能：</label>
+                <div name="skillInfo" style="line-height: 150%;"></div>
+                <br>
+                <label>ability: <label name="ability"></label></label>
+                &emsp;
                 <label>power: <label name="power"></label></label>
+                &emsp;
+                <label>buffEffect: <label name="buffEffect"></label></label>
                 <br>
                 <label>buildValue: <label name="buildValue"></label></label>
-                <br>
+                &emsp;
                 <label>buildCost: <label name="buildCost"></label></label>
-                <br>
+                &emsp;
                 <label>valueCost: <label name="valueCost"></label></label>
-                <br>
-                <label>buffEffect: <label name="buffEffect"></label></label>
                 <br>
                 <br>
                 <h2>升级计算</h2>
@@ -144,16 +171,24 @@
                 <br>
                 <p>注：升级经验为塔下一级的 buildValue 值</p>
             </div>
-            <script>
-                !function () {
+            <script type="module">
+                import { Tower } from "./js/module/unit/Tower.js";
+                import { GameMap } from "./js/module/map/GameMap.js";
+                import { GemItem } from "./js/module/item.js";
+
+                !$(document).ready(() => {
                     let $this = $('[data-section="towers"]');
 
                     $this.find('[name="tower-id"]').html(
                         _.map(config["building"]["tower"], (t, k) => [k, t["name"]])
                             .maps(t => `<option value=${t[0]}>${t[1]}</option>`)
                     );
+                    $this.find('[name="gem-id"]').html(
+                        [["", "无"], ..._.map(config["properties"]["gem"], (t, k) => [k, t["name"]]).sortBy(0)]
+                            .maps(t => `<option value=${t[0]}>${t[1]}</option>`)
+                    );
 
-                    $this.find('[name="isDefendMap"], [name="tower-id"], [name="level"]').change(showData);
+                    $this.find('[name="isDefendMap"], [name="tower-id"], [name="gem-id"], [name="level"]').change(showData);
                     $this.find('[name="isDefendMap"], [name="build-from"], [name="build-to"], [name="build-power"]').change(calcBuildTime);
 
                     showData();
@@ -163,24 +198,31 @@
                         let $this = $('[data-section="towers"]');
 
                         let tower_id = $this.find('[name="tower-id"] option:selected').val();
+                        let gem_id = $this.find('[name="gem-id"] option:selected').val();
                         let level = parseInt($this.find('[name="level"]').val());
 
-                        isDefendMap = $this.find('[name="isDefendMap"]').prop("checked");
+                        GameMap.currentMap.isDefendMap = $this.find('[name="isDefendMap"]').prop("checked");
 
                         let towerData = config["building"]["tower"][tower_id];
                         let tower = new Tower(tower_id);
                         tower.level = level;
+                        if (gem_id != "") {
+                            tower.setGem(new GemItem(gem_id));
+                        }
 
                         $this.find('[name="lev_max"]').text(tower.towerData.levelMax);
                         $this.find('[name="damage"]').text(tower.damage());
                         $this.find('[name="rate"]').text(tower.rate);
                         $this.find('[name="range"]').text(tower.range);
-                        $this.find('[name="ability"]').text(tower.ability);
+                        $this.find('[name="ability"]').text(tower.ability.toFixed(1));
                         $this.find('[name="power"]').text(tower.power);
+                        $this.find('[name="expMax"]').text(tower.buildValue(level + 1));
                         $this.find('[name="buildValue"]').text(tower.buildValue());
                         $this.find('[name="buildCost"]').text(tower.buildCost());
                         $this.find('[name="valueCost"]').text(tower.valueCost());
-                        $this.find('[name="buffEffect"]').text(tower.buffEffect());
+                        $this.find('[name="buffEffect"]').text(tower.buffEffect().toFixed(1));
+                        $this.find('[name="skillInfo"]').html(tower.getInfoHtml());
+
                     }
 
                     function calcBuildTime() {
@@ -204,7 +246,7 @@
                         buildTime = Math.round(buildTime / buildPower);
                         $this.find('[name="build-time"]').text(`${Math.floor(buildTime / 3600)}:${pad(Math.floor(buildTime % 3600 / 60).toString(), 2)}:${pad((buildTime % 60).toString(), 2)}`);
                     }
-                }();
+                });
             </script>
         </section>
 
@@ -233,8 +275,8 @@
                 </table>
             </div>
 
-            <script>
-                !function () {
+            <script type="module">
+                $(document).ready(() => {
                     let $this = $('[data-section="wolfs"]');
                     $this.find(".content table tbody").append(_.map(config["wolfs"], (t, k) =>
                         [k, `<tr>
@@ -247,7 +289,7 @@
                             <td>${t.skills.maps(u => `${u.skid}[${u.lev}]`, ", ")}</td>
                         </tr>`]
                     ).sortBy(0).join(", "))
-                }();
+                });
                 $(document).ready(() => sortTable('[data-section="wolfs"] table'));
             </script>
         </section>
@@ -282,8 +324,10 @@
                     </tbody>
                 </table>
             </div>
-            <script>
-                !function () {
+            <script type="module">
+                import { GlobalData } from "./js/ado/GlobalData.js";
+
+                $(document).ready(() => {
                     let $this = $('[data-section="umaps"]');
                     $this.find(".content table tbody").append(GlobalData.umapsById.map(t => ((k, t) =>
                         `<tr>
@@ -309,7 +353,7 @@
                         </tr>`
                     )(...t)).join(", "))
                     $(document).ready(() => sortTable('[data-section="umaps"] table'));
-                }();
+                });
             </script>
         </section>
 
@@ -341,14 +385,14 @@
                 <label>等级：</label><label name="level"></label>
                 <label>最大血量：</label><label name="hpMax"></label>
                 <br>
-                <div class="chart-area" style="position: absolute; top: 3em; right: 3em;">
-                    <h2 style="text-align: center;">狼出现频率（按数量）</h2>
+                <div class="chart-area" style="position: absolute; top: 3em; right: 3em; font-size: .8em;">
+                    <h2 style="text-align: center;">狼出现频率（按数量，供参考）</h2>
                     <div id="main" style="width: 400px;height:200px;"></div>
                     <div id="main2" style="width: 400px;height:300px;"></div>
                 </div>
             </div>
 
-            <script>
+            <script type="module">
                 $(document).ready(() => {
                     let $this = $('[data-section="umap-wolf"]');
 
@@ -402,12 +446,12 @@
                     function showCharts() {
                         const chartOption = {
                             color: ["#92D050"],
-                            title: { 
+                            title: {
                                 left: 'center',
-                                textStyle:{
-                                    fontStyle:'normal',
-                                    fontFamily:'sans-serif',
-                            　　　　 fontSize:14
+                                textStyle: {
+                                    fontStyle: 'normal',
+                                    fontFamily: 'sans-serif',
+                                    fontSize: 14
                                 }
                             },
                             tooltip: {},
@@ -486,20 +530,16 @@
         </section>
 
         <section data-section="research-notes" class="hide">
+            <div>$\text{Stankle 对羊村的研究笔记}$</div>
             <div class="content"></div>
-            <!-- <div>
-                <p>$\LaTeX$ $\sqrt[3]{h_a+h_bx}$ $E=mc^2$</p>
-            </div>
-            <div id="math"></div> -->
-            <script>
+            <script type="text/javascript">
 
-                //katex.render("x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}", document.getElementById("math"));
-                !function () {
-                    $('[data-section="research-notes"] div').html(marked("$\LaTeX$  $\sqrt[3]{h_a+h_bx}$"));
+                $(document).ready(() => {
                     $.get("static/research_notes.md", function (response, status, xhr) {
-                        $('[data-section="research-notes"] div').html(marked(response));
+                        $('[data-section="research-notes"] .content').html(formatMarktex(response));
+                        //$('[data-section="research-notes"] div').html(marked(response));
                     });
-                }();
+                });
             </script>
         </section>
     </div>
