@@ -7,6 +7,8 @@ import { BaseSkillData } from "../command/skill.js";
 import { TowerSkillData } from "../command/skill.js";
 import { Position } from "../utils/Position.js";
 import { EffectData } from "../command/effect.js";
+import { MonsterSkillData } from "../command/skill.js";
+import { MonsterManager } from "../command/unit.js";
 
 export class BaseSkill extends BaseModule {
     level;
@@ -543,7 +545,7 @@ export class CussSkill extends TowerSkill {
     }
 
     get cussPower() {
-        return this.data.getLevelParam(this.level, 0) * this.level * this.tower.this.level + CussSkill.DEFAULT_CUSS_POWER;
+        return this.data.getLevelParam(this.level, 0) * this.level * this.tower.level + CussSkill.DEFAULT_CUSS_POWER;
     }
 
     get duration() {
@@ -927,9 +929,9 @@ export class MonsterSkill extends BaseSkill {
 
     get skillSign() {
         if (!this.isDebuff) {
-            return Tools.formatHtmlText(GlobalDataGetValue.getLanguageStr(2421), 16711680, true, 13);
+            return formatHtml(GlobalDataGetValue.getLanguageStr(2421), 16711680, true, 13);
         }
-        return Tools.formatHtmlText(GlobalDataGetValue.getLanguageStr(2422), 0, true, 13);
+        return formatHtml(GlobalDataGetValue.getLanguageStr(2422), 0, true, 13);
     }
 
     get isDowerSkill() {
@@ -969,9 +971,9 @@ export class MonsterSkill extends BaseSkill {
         let _str = "";
         for (i = 0; i < _conflict.length; i++) {
             _conflictList = _conflict[i];
-            if (_conflictList.indexOf(data.kindId) != -1) {
+            if (_conflictList.indexOf(this.data.kindId) != -1) {
                 for (j = 0; j < _conflictList.length; j++) {
-                    if (_conflictList[j] != data.kindId) {
+                    if (_conflictList[j] != this.data.kindId) {
                         _str += MonsterSkill.getKindName(_conflictList[j]);
                         _str += GlobalDataGetValue.getLanguageStr(2406);
                     }
@@ -1041,7 +1043,7 @@ export class MonsterSkill extends BaseSkill {
     }
 
     get grade() {
-        let _id = data.id;
+        let _id = this.data.id;
         let _index = _id.indexOf("_");
         if (_index == -1) {
             return MonsterSkill.RES_FG_X;
@@ -1061,9 +1063,9 @@ export class MonsterSkill extends BaseSkill {
     getSubClasses() {
         switch (this.data.kindId) {
             case MonsterSkillData.KIND_FLY:
-                return new FlySkill(data.id, this.level, this.monster);
+                return new FlySkill(this.data.id, this.level, this.monster);
             case MonsterSkillData.KIND_AIRBORNE:
-                return new AirborneSkill(data.id, this.level, this.monster);
+                return new AirborneSkill(this.data.id, this.level, this.monster);
             case MonsterSkillData.KIND_RESIST_FIRE:
             case MonsterSkillData.KIND_RESIST_FROST:
             case MonsterSkillData.KIND_RESIST_POISON:
@@ -1086,37 +1088,37 @@ export class MonsterSkill extends BaseSkill {
             case MonsterSkillData.KIND_WEAK_CRIT:
             case MonsterSkillData.KIND_WEAK_LIGHT:
             case MonsterSkillData.KIND_WEAK_INTIMIDATE:
-                return new ResistanceSkill(data.id, this.level, this.monster);
+                return new ResistanceSkill(this.data.id, this.level, this.monster);
             case MonsterSkillData.KIND_ISOLATION:
-                return new IsolationSkill(data.id, this.level, this.monster);
+                return new IsolationSkill(this.data.id, this.level, this.monster);
             case MonsterSkillData.KIND_RUN:
-                return new RunSkill(data.id, this.level, this.monster);
+                return new RunSkill(this.data.id, this.level, this.monster);
             case MonsterSkillData.KIND_MIRROR:
-                return new MirrorSkill(data.id, this.level, this.monster);
+                return new MirrorSkill(this.data.id, this.level, this.monster);
             case MonsterSkillData.KIND_SUMMON:
-                return new SummonSkill(data.id, this.level, this.monster);
+                return new SummonSkill(this.data.id, this.level, this.monster);
             case MonsterSkillData.KIND_CLOUD:
-                return new CloudSkill(data.id, this.level, this.monster);
+                return new CloudSkill(this.data.id, this.level, this.monster);
             case MonsterSkillData.KIND_CURE:
-                return new CureSkill(data.id, this.level, this.monster);
+                return new CureSkill(this.data.id, this.level, this.monster);
             case MonsterSkillData.KIND_BLINK:
-                return new BlinkSkill(data.id, this.level, this.monster);
+                return new BlinkSkill(this.data.id, this.level, this.monster);
             case MonsterSkillData.KIND_HIDE:
-                return new HideSkill(data.id, this.level, this.monster);
+                return new HideSkill(this.data.id, this.level, this.monster);
             case MonsterSkillData.KIND_RELIVE:
-                return new ReliveSkill(data.id, this.level, this.monster);
+                return new ReliveSkill(this.data.id, this.level, this.monster);
             case MonsterSkillData.KIND_SUICIDE:
-                return new SuicideSkill(data.id, this.level, this.monster);
+                return new SuicideSkill(this.data.id, this.level, this.monster);
             case MonsterSkillData.KIND_SHIELD:
-                return new ShieldSkill(data.id, this.level, this.monster);
+                return new ShieldSkill(this.data.id, this.level, this.monster);
             case MonsterSkillData.KIND_SNEER:
-                return new SneerSkill(data.id, this.level, this.monster);
+                return new SneerSkill(this.data.id, this.level, this.monster);
             case MonsterSkillData.KIND_REINCARNATE:
-                return new ReincarnateSkill(data.id, this.level, this.monster);
+                return new ReincarnateSkill(this.data.id, this.level, this.monster);
             case MonsterSkillData.KIND_TRANSFORM:
-                return new TransformSkill(data.id, this.level, this.monster);
+                return new TransformSkill(this.data.id, this.level, this.monster);
             case MonsterSkillData.KIND_LINKS:
-                return new LinksSkill(data.id, this.level, this.monster);
+                return new LinksSkill(this.data.id, this.level, this.monster);
             default:
                 return this;
         }
@@ -1173,8 +1175,8 @@ export class MonsterEventSkill extends MonsterSkill {
         this.skillTag2 = this.getTagCooldown();
         this.nextLevelSkillTag2 = this.getTagCooldown(this.level + 1);
         if (_hasDuration) {
-            skillTag3 = this.getTagDuration();
-            nextLevelSkillTag3 = this.getTagDuration(this.level + 1);
+            this.skillTag3 = this.getTagDuration();
+            this.nextLevelSkillTag3 = this.getTagDuration(this.level + 1);
         }
     }
 
@@ -1272,7 +1274,7 @@ export class BlinkSkill extends MonsterEventSkill {
         this.m_updateFunction = function () {
             this.m_skillInfo = GlobalDataGetValue.getLanguageStr(2303, Position.toGridStr(this.range()));
             this.m_nextLevelSkillInfo = GlobalDataGetValue.getLanguageStr(2303, Position.toGridStr(this.range(this.level + 1)));
-            refreshTag();
+            this.refreshTag();
         };
     }
 
@@ -1280,7 +1282,7 @@ export class BlinkSkill extends MonsterEventSkill {
         if (_level < 0) {
             _level = this.level;
         }
-        return data.getLevelParam(_level, 5);
+        return this.data.getLevelParam(_level, 5);
     }
 }
 
@@ -1293,7 +1295,7 @@ export class CloudSkill extends MonsterEventSkill {
         this.m_updateFunction = function () {
             this.m_skillInfo = GlobalDataGetValue.getLanguageStr(2302, this.cloudTime());
             this.m_nextLevelSkillInfo = GlobalDataGetValue.getLanguageStr(2302, this.cloudTime(this.level + 1));
-            refreshTag(true);
+            this.refreshTag(true);
         };
     }
 
@@ -1301,14 +1303,14 @@ export class CloudSkill extends MonsterEventSkill {
         if (_level < 0) {
             _level = this.level;
         }
-        return data.getLevelParam(_level, 5);
+        return this.data.getLevelParam(_level, 5);
     }
 
     cloudTime(_level = -1) {
         if (_level < 0) {
             _level = this.level;
         }
-        return data.getLevelParam(_level, 6);
+        return this.data.getLevelParam(_level, 6);
     }
 }
 
@@ -1321,7 +1323,7 @@ export class CureSkill extends MonsterEventSkill {
         this.m_updateFunction = function () {
             this.m_skillInfo = GlobalDataGetValue.getLanguageStr(2300, Position.toGridStr(this.cureRange()), Position.toPercentage(this.cureRate()));
             this.m_nextLevelSkillInfo = GlobalDataGetValue.getLanguageStr(2300, Position.toGridStr(this.cureRange(this.level + 1)), Position.toPercentage(this.cureRate(this.level + 1)));
-            refreshTag();
+            this.refreshTag();
         };
     }
 
@@ -1329,14 +1331,14 @@ export class CureSkill extends MonsterEventSkill {
         if (_level < 0) {
             _level = this.level;
         }
-        return data.getLevelParam(_level, 5);
+        return this.data.getLevelParam(_level, 5);
     }
 
     cureRate(_level = -1) {
         if (_level < 0) {
             _level = this.level;
         }
-        return data.getLevelParam(_level, 6);
+        return this.data.getLevelParam(_level, 6);
     }
 }
 
@@ -1366,9 +1368,9 @@ export class HideSkill extends MonsterEventSkill {
         super(_id, _level, _monster);
         this.index = 150;
         this.m_updateFunction = function () {
-            this.m_skillInfo = GlobalDataGetValue.getLanguageStr(2305, duration());
-            this.m_nextLevelSkillInfo = GlobalDataGetValue.getLanguageStr(2305, duration(this.level + 1));
-            refreshTag();
+            this.m_skillInfo = GlobalDataGetValue.getLanguageStr(2305, this.duration());
+            this.m_nextLevelSkillInfo = GlobalDataGetValue.getLanguageStr(2305, this.duration(this.level + 1));
+            this.refreshTag();
         };
     }
 }
@@ -1392,9 +1394,9 @@ export class LinksSkill extends MonsterEventSkill {
         super(_id, _level, _monster);
         this.index = 116;
         this.m_updateFunction = function () {
-            this.m_skillInfo = GlobalDataGetValue.getLanguageStr(2728, Position.toGridStr(this.range()), Position.toPercentage(this.shieldRate()), duration());
-            this.m_nextLevelSkillInfo = GlobalDataGetValue.getLanguageStr(2728, Position.toGridStr(this.range(this.level + 1)), Position.toPercentage(this.shieldRate(this.level + 1)), duration(this.level + 1));
-            refreshTag();
+            this.m_skillInfo = GlobalDataGetValue.getLanguageStr(2728, Position.toGridStr(this.range()), Position.toPercentage(this.shieldRate()), this.duration());
+            this.m_nextLevelSkillInfo = GlobalDataGetValue.getLanguageStr(2728, Position.toGridStr(this.range(this.level + 1)), Position.toPercentage(this.shieldRate(this.level + 1)), this.duration(this.level + 1));
+            this.refreshTag();
         };
     }
 
@@ -1402,14 +1404,14 @@ export class LinksSkill extends MonsterEventSkill {
         if (_level < 0) {
             _level = this.level;
         }
-        return data.getLevelParam(_level, 5);
+        return this.data.getLevelParam(_level, 5);
     }
 
     shieldRate(_level = -1) {
         if (_level < 0) {
             _level = this.level;
         }
-        return data.getLevelParam(_level, 6);
+        return this.data.getLevelParam(_level, 6);
     }
 }
 
@@ -1421,9 +1423,9 @@ export class MirrorSkill extends MonsterEventSkill {
         super(_id, _level, _monster);
         this.index = 130;
         this.m_updateFunction = function () {
-            this.m_skillInfo = GlobalDataGetValue.getLanguageStr(2306, this.mirrorNum(), Position.toPercentage(this.hpRate()), duration());
-            this.m_nextLevelSkillInfo = GlobalDataGetValue.getLanguageStr(2306, this.mirrorNum(this.level + 1), Position.toPercentage(this.hpRate(this.level + 1)), duration(this.level + 1));
-            refreshTag();
+            this.m_skillInfo = GlobalDataGetValue.getLanguageStr(2306, this.mirrorNum(), Position.toPercentage(this.hpRate()), this.duration());
+            this.m_nextLevelSkillInfo = GlobalDataGetValue.getLanguageStr(2306, this.mirrorNum(this.level + 1), Position.toPercentage(this.hpRate(this.level + 1)), this.duration(this.level + 1));
+            this.refreshTag();
         };
     }
 
@@ -1431,14 +1433,14 @@ export class MirrorSkill extends MonsterEventSkill {
         if (_level < 0) {
             _level = this.level;
         }
-        return data.getLevelParam(_level, 5);
+        return this.data.getLevelParam(_level, 5);
     }
 
     hpRate(_level = -1) {
         if (_level < 0) {
             _level = this.level;
         }
-        return data.getLevelParam(_level, 6);
+        return this.data.getLevelParam(_level, 6);
     }
 }
 
@@ -1493,14 +1495,14 @@ export class ReliveSkill extends MonsterSkill {
         if (_level < 0) {
             _level = this.level;
         }
-        return data.getLevelParam(_level, 0);
+        return this.data.getLevelParam(_level, 0);
     }
 
     reliveHpRate(_level = -1) {
         if (_level < 0) {
             _level = this.level;
         }
-        return data.getLevelParam(_level, 1);
+        return this.data.getLevelParam(_level, 1);
     }
 }
 
@@ -1528,21 +1530,21 @@ export class ResistanceSkill extends MonsterSkill {
         if (_level < 0) {
             _level = this.level;
         }
-        return data.getLevelParam(_level, 0);
+        return this.data.getLevelParam(_level, 0);
     }
 
     getRange(_level = -1) {
         if (_level < 0) {
             _level = this.level;
         }
-        return data.getLevelParam(_level, 1);
+        return this.data.getLevelParam(_level, 1);
     }
 
     getMaxHP(_level = -1) {
         if (_level < 0) {
             _level = this.level;
         }
-        return data.getLevelParam(_level, 1);
+        return this.data.getLevelParam(_level, 1);
     }
 
     resistInfo(_level = -1) {
@@ -1570,7 +1572,7 @@ export class ResistanceSkill extends MonsterSkill {
     }
 
     get resistInfoNumber() {
-        switch (data.kindId) {
+        switch (this.data.kindId) {
             case MonsterSkillData.KIND_RESIST_FIRE:
             case MonsterSkillData.KIND_WEAK_FIRE:
                 return 2203;
@@ -1618,9 +1620,9 @@ export class RunSkill extends MonsterEventSkill {
         super(_id, _level, _monster);
         this.index = 160;
         this.m_updateFunction = function () {
-            this.m_skillInfo = GlobalDataGetValue.getLanguageStr(2304, Position.toPercentage(this.speedRate() - 1), duration());
-            this.m_nextLevelSkillInfo = GlobalDataGetValue.getLanguageStr(2304, Position.toPercentage(this.speedRate(this.level + 1) - 1), duration(this.level + 1));
-            refreshTag();
+            this.m_skillInfo = GlobalDataGetValue.getLanguageStr(2304, Position.toPercentage(this.speedRate() - 1), this.duration());
+            this.m_nextLevelSkillInfo = GlobalDataGetValue.getLanguageStr(2304, Position.toPercentage(this.speedRate(this.level + 1) - 1), this.duration(this.level + 1));
+            this.refreshTag();
         };
     }
 
@@ -1628,7 +1630,7 @@ export class RunSkill extends MonsterEventSkill {
         if (_level < 0) {
             _level = this.level;
         }
-        return data.getLevelParam(_level, 5) + 1;
+        return this.data.getLevelParam(_level, 5) + 1;
     }
 }
 
@@ -1641,7 +1643,7 @@ export class ShieldSkill extends MonsterEventSkill {
         this.m_updateFunction = function () {
             this.m_skillInfo = GlobalDataGetValue.getLanguageStr(2308, Position.toPercentage(this.shieldRate()), this.shieldTime());
             this.m_nextLevelSkillInfo = GlobalDataGetValue.getLanguageStr(2308, Position.toPercentage(this.shieldRate(this.level + 1)), this.shieldTime(this.level + 1));
-            refreshTag(true);
+            this.refreshTag(true);
         };
     }
 
@@ -1649,21 +1651,21 @@ export class ShieldSkill extends MonsterEventSkill {
         if (_level < 0) {
             _level = this.level;
         }
-        return data.getLevelParam(_level, 5);
+        return this.data.getLevelParam(_level, 5);
     }
 
     shieldTime(_level = -1) {
         if (_level < 0) {
             _level = this.level;
         }
-        return data.getLevelParam(_level, 6);
+        return this.data.getLevelParam(_level, 6);
     }
 
     shieldRate(_level = -1) {
         if (_level < 0) {
             _level = this.level;
         }
-        return data.getLevelParam(_level, 7);
+        return this.data.getLevelParam(_level, 7);
     }
 }
 
@@ -1674,9 +1676,9 @@ export class SneerSkill extends MonsterEventSkill {
         super(_id, _level, _monster);
         this.index = 106;
         this.m_updateFunction = function () {
-            this.m_skillInfo = GlobalDataGetValue.getLanguageStr(2309, Position.toGridStr(this.range()), Position.toPercentage(this.shieldRate()), duration());
-            this.m_nextLevelSkillInfo = GlobalDataGetValue.getLanguageStr(2309, Position.toGridStr(this.range(this.level + 1)), Position.toPercentage(this.shieldRate(this.level + 1)), duration(this.level + 1));
-            refreshTag();
+            this.m_skillInfo = GlobalDataGetValue.getLanguageStr(2309, Position.toGridStr(this.range()), Position.toPercentage(this.shieldRate()), this.duration());
+            this.m_nextLevelSkillInfo = GlobalDataGetValue.getLanguageStr(2309, Position.toGridStr(this.range(this.level + 1)), Position.toPercentage(this.shieldRate(this.level + 1)), this.duration(this.level + 1));
+            this.refreshTag();
         };
     }
 
@@ -1684,14 +1686,14 @@ export class SneerSkill extends MonsterEventSkill {
         if (_level < 0) {
             _level = this.level;
         }
-        return data.getLevelParam(_level, 5);
+        return this.data.getLevelParam(_level, 5);
     }
 
     shieldRate(_level = -1) {
         if (_level < 0) {
             _level = this.level;
         }
-        return data.getLevelParam(_level, 6);
+        return this.data.getLevelParam(_level, 6);
     }
 }
 
@@ -1713,14 +1715,14 @@ export class SuicideSkill extends MonsterSkill {
         if (_level < 0) {
             _level = this.level;
         }
-        return data.getLevelParam(_level, 0);
+        return this.data.getLevelParam(_level, 0);
     }
 
     cloudTime(_level = -1) {
         if (_level < 0) {
             _level = this.level;
         }
-        return data.getLevelParam(_level, 1);
+        return this.data.getLevelParam(_level, 1);
     }
 }
 
@@ -1734,7 +1736,7 @@ export class SummonSkill extends MonsterEventSkill {
         this.m_updateFunction = function () {
             this.m_skillInfo = GlobalDataGetValue.getLanguageStr(2301, this.summonNum(), Position.toPercentage(this.hpRate()), this.summonName());
             this.m_nextLevelSkillInfo = GlobalDataGetValue.getLanguageStr(2301, this.summonNum(this.level + 1), Position.toPercentage(this.hpRate(this.level + 1)), this.summonName(this.level + 1));
-            refreshTag(true);
+            this.refreshTag(true);
         };
     }
 
@@ -1742,7 +1744,7 @@ export class SummonSkill extends MonsterEventSkill {
         if (_level < 0) {
             _level = this.level;
         }
-        return data.getLevelParam(_level, 5);
+        return this.data.getLevelParam(_level, 5);
     }
 
     summonName(_level = -1) {
@@ -1764,14 +1766,14 @@ export class SummonSkill extends MonsterEventSkill {
         if (_level < 0) {
             _level = this.level;
         }
-        return data.getLevelParam(_level, 6);
+        return this.data.getLevelParam(_level, 6);
     }
 
     hpRate(_level = -1) {
         if (_level < 0) {
             _level = this.level;
         }
-        return data.getLevelParam(_level, 7);
+        return this.data.getLevelParam(_level, 7);
     }
 }
 
@@ -1784,7 +1786,7 @@ export class TransformSkill extends MonsterEventSkill {
         this.m_updateFunction = function () {
             this.m_skillInfo = GlobalDataGetValue.getLanguageStr(2307, this.transformName());
             this.m_nextLevelSkillInfo = GlobalDataGetValue.getLanguageStr(2307, this.transformName(this.level + 1));
-            refreshTag(true);
+            this.refreshTag(true);
         };
     }
 

@@ -1,4 +1,6 @@
 import { BaseDisplayModule } from "../BaseModule.js";
+import { MonsterSkill } from "../skill.js";
+import { TowerSkill } from "../skill.js";
 
 export class BaseUnit extends BaseDisplayModule {
     static SKILL_ID = "skid";
@@ -44,35 +46,32 @@ export class BaseUnit extends BaseDisplayModule {
         let _skills = null;
         let _sp = null;
         this.skills = new Object();
-        if (this instanceof Monster) {
+        if (this.constructor.name == "Monster") {
             _skills = this.getAllSkills();
         }
         if (_skills == null) {
             _skills = this.data.skills;
         }
         if (_skills != null) {
-            for (k in _skills) {
-                if (this instanceof Tower) {
-                    _skill = new TowerSkill(k, _skills[k], this).getSubClasses();
-                }
-                else if (this instanceof Monster) {
+            if (this.constructor.name == "Monster") {
+                for (let k = 0; k < _skills.length; k++) {
                     if (_skills instanceof Array) {
                         _skill = new MonsterSkill(_skills[k][BaseUnit.SKILL_ID], _skills[k][BaseUnit.SKILL_LEVEL], this).getSubClasses();
                     }
                     else {
                         _skill = new MonsterSkill(k, _skills[k], this).getSubClasses();
                     }
+                    this.skills[_skill.data.kindId] = _skill;
                 }
-                this.skills[_skill.data.kindId] = _skill;
             }
         } else if (this.data.skillPackageId != "") {
             _sp = new SkillsPackage(this.data.skillPackageId, this.data.skillPackageLevel);
             if (_sp != null && _sp.skillsPackageData != null) {
                 for (k of _sp.skillsPackageData.skillsList) {
-                    if (this instanceof Tower) {
+                    if (this.constructor.name == "Tower") {
                         _skill = new TowerSkill(k, _sp.level, this).getSubClasses();
                     }
-                    else if (this instanceof Monster) {
+                    else if (this.constructor.name == "Monster") {
                         _skill = new MonsterSkill(k, _sp.level, this).getSubClasses();
                     }
                     this.skills[_skill.data.kindId] = _skill;

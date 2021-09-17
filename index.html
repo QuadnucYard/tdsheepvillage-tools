@@ -33,7 +33,6 @@
     <script type="text/javascript" src="sort_table.js"></script>
     <script type="text/javascript" src="utils.js"></script>
     <script type="text/javascript" src="format.js"></script>
-    <script type="text/javascript" src="config.js"></script>
     <script type="text/javascript" src="static/wavegen_freq.js" defer></script>
     <script type="module" src="js/InitLoad.js"></script>
 
@@ -93,16 +92,15 @@
         <section data-section="user" class="hide">
             <div class="content" style="cursor: default;">
                 <h1>玩家数据</h1>
-                <label>等级：<input name="level" type="number" min="1" value="1"></label>
-                <br>
-                <label>升级经验：<label name="max-exp"></label></label>
-                <br>
-                <label>力量：<label name="power"></label></label>
-                <br>
-                <label>连升等级：<label name="upgrade-level"></label></label>
+                <p><label>等级：<input name="level" type="number" min="1" value="1"></label></p>
+                <p><label>升级经验：<label name="max-exp"></label></label></p>
+                <p><label>力量：<label name="power"></label></label></p>
+                <p><label>连升等级：<label name="upgrade-level"></label></label></p>
             </div>
             <script type="module">
-                $(document).ready(() => {
+                import { InitLoad } from "./js/InitLoad.js";
+
+                InitLoad.ready(() => {
                     let $this = $('[data-section="user"]');
 
                     $this.find('[name="level"]').change(showData);
@@ -126,65 +124,80 @@
         <section data-section="towers" class="hide">
             <div class="content" style="cursor: default;">
                 <h1>防御塔数据</h1>
-                <label>是否为防线：<input type="checkbox" name="isDefendMap"></label>
-                <br>
-                <label>塔</label>
-                <select name="tower-id"></select>
-                <br>
-                <label>宝石</label>
-                <select name="gem-id"></select>
-                <br>
-                <label>等级上限：<label name="lev_max"></label></label>
-                <br>
-                <label>等级：</label>
-                <input name="level" type="number" min=1 max=100 value=1>
-                <br>
-                <label>攻击力：<label name="damage"></label></label>&emsp;
-                <label>攻击频率：<label name="rate"></label></label>&emsp;
-                <label>攻击范围：<label name="range"></label></label>&emsp;
-                <br>
-                <label>升级经验：<label name="expMax"></label></label>
-                <br>
-                <label>技能：</label>
+                <p>
+                    <label>是否为防线：<input type="checkbox" name="isDefendMap"></label>
+                </p>
+                <p>
+                    <label>塔</label>
+                    <select name="tower-id"></select>
+                </p>
+                <p>
+                    <label>宝石</label>
+                    <select name="gem-id"></select>
+                </p>
+                <p>
+
+                </p>
+                <p>
+                    <label>等级：</label>
+                    <input name="level" type="number" min=1 max=100 value=1>
+                    &emsp;
+                    <label>等级上限：<label name="lev_max"></label></label>
+                </p>
+                <p>
+                    <label>攻击力：<label name="damage"></label></label>&emsp;
+                    <label>攻击频率：<label name="rate"></label></label>&emsp;
+                    <label>攻击范围：<label name="range"></label></label>&emsp;
+                </p>
+                <p>
+                    <label>升级经验：<label name="expMax"></label></label>
+                </p>
+                <p>
+                    <label>简介：</label>
                 <div name="skillInfo" style="line-height: 150%;"></div>
-                <br>
-                <label>ability: <label name="ability"></label></label>
-                &emsp;
-                <label>power: <label name="power"></label></label>
-                &emsp;
-                <label>buffEffect: <label name="buffEffect"></label></label>
-                <br>
-                <label>buildValue: <label name="buildValue"></label></label>
-                &emsp;
-                <label>buildCost: <label name="buildCost"></label></label>
-                &emsp;
-                <label>valueCost: <label name="valueCost"></label></label>
-                <br>
+                </p>
+                <p>
+                    <label>ability: <label name="ability"></label></label>
+                    &emsp;
+                    <label>power: <label name="power"></label></label>
+                    &emsp;
+                    <label>buffEffect: <label name="buffEffect"></label></label>
+                    <br>
+                    <label>buildValue: <label name="buildValue"></label></label>
+                    &emsp;
+                    <label>buildCost: <label name="buildCost"></label></label>
+                    &emsp;
+                    <label>valueCost: <label name="valueCost"></label></label>
+                </p>
                 <br>
                 <h2>升级计算</h2>
-                从<input name="build-from" type="number" min=1 style="width: 3em;" value="0">级到<input name="build-to"
-                    type="number" min=1 style="width: 3em;" value="1">级
-                <br>
-                苦工总力量：<input name="build-power" type="number" min=1 style="width: 5em;" value=1>
-                <br>
-                需要时间：<label name="build-time">NaN</label>
-                <br>
+                <p>
+                    从<input name="build-from" type="number" min=1 style="width: 3em;" value="0">级到<input name="build-to"
+                        type="number" min=1 style="width: 3em;" value="1">级
+                    <br>
+                    苦工总力量：<input name="build-power" type="number" min=1 style="width: 5em;" value=1>
+                    <br>
+                    需要时间：<label name="build-time">NaN</label>
+                    <br>
+                </p>
                 <p>注：升级经验为塔下一级的 buildValue 值</p>
             </div>
             <script type="module">
+                import { GlobalData } from "./js/ado/GlobalData.js";
                 import { Tower } from "./js/module/unit/Tower.js";
                 import { GameMap } from "./js/module/map/GameMap.js";
                 import { GemItem } from "./js/module/item.js";
+                import { InitLoad } from "./js/InitLoad.js";
 
-                !$(document).ready(() => {
+                InitLoad.ready(() => {
                     let $this = $('[data-section="towers"]');
 
                     $this.find('[name="tower-id"]').html(
-                        _.map(config["building"]["tower"], (t, k) => [k, t["name"]])
+                        _.map(GlobalData.$_towerAtt_Obj, (t, k) => [k, t["name"]])
                             .maps(t => `<option value=${t[0]}>${t[1]}</option>`)
                     );
                     $this.find('[name="gem-id"]').html(
-                        [["", "无"], ..._.map(config["properties"]["gem"], (t, k) => [k, t["name"]]).sortBy(0)]
+                        [["", "无"], ..._.map(GlobalData.$_global_properties["gem"], (t, k) => [k, t["name"]]).sortBy(0)]
                             .maps(t => `<option value=${t[0]}>${t[1]}</option>`)
                     );
 
@@ -203,7 +216,7 @@
 
                         GameMap.currentMap.isDefendMap = $this.find('[name="isDefendMap"]').prop("checked");
 
-                        let towerData = config["building"]["tower"][tower_id];
+                        let towerData = GlobalData.$_towerAtt_Obj[tower_id];
                         let tower = new Tower(tower_id);
                         tower.level = level;
                         if (gem_id != "") {
@@ -276,19 +289,42 @@
             </div>
 
             <script type="module">
-                $(document).ready(() => {
+                import { GlobalData } from "./js/ado/GlobalData.js";
+                import { InitLoad } from "./js/InitLoad.js";
+                import { Monster } from "./js/module/unit/Monster.js";
+
+                InitLoad.ready(() => {
                     let $this = $('[data-section="wolfs"]');
-                    $this.find(".content table tbody").append(_.map(config["wolfs"], (t, k) =>
-                        [k, `<tr>
-                            <td>${k}</td>
-                            <td>${t.name.includes('^') ? t.name.takeFrom('^', 1) : t.name}</td>
-                            <td>${t.speed}</td>
-                            <td>${t.pop}</td>
-                            <td>${t.charm}</td>
-                            <td>${t.hp_factor.a}, ${t.hp_factor.b}, ${t.hp_factor.c}</td>
-                            <td>${t.skills.maps(u => `${u.skid}[${u.lev}]`, ", ")}</td>
-                        </tr>`]
-                    ).sortBy(0).join(", "))
+                    $this.find(".content table tbody").append(_.map(GlobalData.$_wolfAtt_Obj, (t, k) => k).sort().map(t => {
+                        let _wolf = new Monster(t, 0, 0);
+                        _wolf.initSkills();
+                        return `<tr>
+                            <td>${t}</td>
+                            <td>${_wolf.monsterData.name}</td>
+                            <td>${_wolf.monsterData.speedBase}</td>
+                            <td>${_wolf.monsterData.population}</td>
+                            <td>${_wolf.monsterData.charm}</td>
+                            <td>${_wolf.monsterData.hpMaxA}, ${_wolf.monsterData.hpMaxB}, ${_wolf.monsterData.hpMaxC}</td>
+                            <td>${_.map(_wolf.skills, (t, k) => `<p>${getSkillHtml(t)}</p>`).join("")}</td>
+                            </tr>`
+                    }));
+
+                    function getSkillSign(_skill) {
+                        return !_skill.isDebuff ? formatHtml("↑", 0xFF0000, true, "", "monospace") : formatHtml("↓", 0, true, "", "monospace");
+                    }
+                    function getSkillHtml(_skill) {
+                        const _tagColor = 0x4040F0;
+                        let _htmlTextArr = [];
+
+                        _htmlTextArr.push(getSkillSign(_skill) + " " + formatHtml(_skill.name, 0x000040, true, "") + "&nbsp;");
+                        _htmlTextArr.push(formatHtml(`[${_skill.data.id}] `, 0x777777, true, "smaller"));
+                        _htmlTextArr.push(formatHtml(_skill.skillInfo, 0x333333, false, "smaller"));
+                        if (_skill.skillTag1) _htmlTextArr.push(formatHtml(_skill.skillTag1, _tagColor, false, "small"));
+                        if (_skill.skillTag2) _htmlTextArr.push(formatHtml(_skill.skillTag2, _tagColor, false, "small"));
+                        if (_skill.skillTag3) _htmlTextArr.push(formatHtml(_skill.skillTag3, _tagColor, false, "small"));
+                        return _htmlTextArr.join("");
+                        //return formatHtmlBr(_htmlTextArr);
+                    }
                 });
                 $(document).ready(() => sortTable('[data-section="wolfs"] table'));
             </script>
@@ -326,8 +362,9 @@
             </div>
             <script type="module">
                 import { GlobalData } from "./js/ado/GlobalData.js";
+                import { InitLoad } from "./js/InitLoad.js";
 
-                $(document).ready(() => {
+                InitLoad.ready(() => {
                     let $this = $('[data-section="umaps"]');
                     $this.find(".content table tbody").append(GlobalData.umapsById.map(t => ((k, t) =>
                         `<tr>
@@ -342,11 +379,11 @@
                             <td>${t.interval}</td>
                             <td>${t.interval_rule}</td>
                             <td>${t.teleport_rule || ""}</td>
-                            <td>${t.pass_by.map(u => config["umaps"][u].name)}</td>
-                            <td class="align-left">${t.wolf_proportion.map(t => config["wolfs"][t[1]]).map(t => `${t.name}[${t.pop}]`).join(", ")}</td>
+                            <td>${t.pass_by.map(u => GlobalData.$_map_Obj[u].name)}</td>
+                            <td class="align-left">${t.wolf_proportion.map(t => GlobalData.$_wolfAtt_Obj[t[1]]).map(t => `${t.name}[${t.pop}]`).join(", ")}</td>
                             <td class="align-left">${_.map(t.random_boss?.map(t =>
-                            [config["wolfs"][t[1]].name, t[2], Object.entries(t[3].properties.card)[0]]).groupBy(0), (t, k) =>
-                            `${k}{${t.maps(u => `${u[1]},${config.properties.card[u[2][0]].name.takeFrom('^', 1)}*${u[2][1]}`, "; ")}}`
+                            [GlobalData.$_wolfAtt_Obj[t[1]].name, t[2], Object.entries(t[3].properties.card)[0]]).groupBy(0), (t, k) =>
+                            `${k}{${t.maps(u => `${u[1]},${GlobalData.$_global_properties.card[u[2][0]].name.takeFrom('^', 1)}*${u[2][1]}`, "; ")}}`
 
                         ).join(", ") || ""
                         }</td>
@@ -358,33 +395,57 @@
         </section>
 
         <section data-section="umap-wolf" class="hide">
+            <style>
+                [name=wolf-buttons] span {
+                    user-select: none;
+                    background-color: #e5eece;
+                    border-radius: 4px;
+                    margin: 0 .2em;
+                    padding: .4em;
+                    font-size: smaller;
+                }
+
+                [name=wolf-buttons] span:hover {
+                    background-color: #f2f7e7;
+                }
+            </style>
+
             <div class="content">
                 <h1>前线地图的狼</h1>
-                <label>地图</label>
-                <select name="umap-id"></select>
-                <label name="umap-diff">难度系数：</label>
-                <br>
-                <label>狼</label>
-                <select name="wolf"></select>
-                <label name="hp-factor">血量系数：</label>
-                <br>
-                <label>进度</label>
-                <input name="score" type="number" min=0 value=0>
-                <label name="pass-score">通关进度：</label>
-                <br>
-                <label>难度</label>
-                <select name="diff">
-                    <option value=0.8>小菜一碟</option>
-                    <option value=0.9>轻而易举</option>
-                    <option value=1.0>势均力敌</option>
-                    <option value=1.1>有惊无险</option>
-                    <option value=1.2>稍有难度</option>
-                    <option value=1.3>困难重重</option>
-                </select>
-                <br>
-                <label>等级：</label><label name="level"></label>
-                <label>最大血量：</label><label name="hpMax"></label>
-                <br>
+                <p>
+                    <label>地图</label>
+                    <select name="umap-id"></select>
+                    <label name="umap-diff">难度系数：</label>
+                </p>
+                <p>
+                    <label>该地图的狼：</label>
+                    <span name="wolf-buttons"></span>
+                </p>
+                <p>
+                    <label>狼</label>
+                    <select name="wolf"></select>
+                    <label name="hp-factor">血量系数：</label>
+                </p>
+                <p>
+                    <label>进度</label>
+                    <input name="score" type="number" min=0 value=0>
+                    <label name="pass-score">通关进度：</label>
+                </p>
+                <p>
+                    <label>难度</label>
+                    <select name="diff">
+                        <option value=0.8>小菜一碟</option>
+                        <option value=0.9>轻而易举</option>
+                        <option value=1.0>势均力敌</option>
+                        <option value=1.1>有惊无险</option>
+                        <option value=1.2>稍有难度</option>
+                        <option value=1.3>困难重重</option>
+                    </select>
+                </p>
+                <p>
+                    <label>等级：</label><label name="level"></label>
+                    <label>最大血量：</label><label name="hpMax"></label>
+                </p>
                 <div class="chart-area" style="position: absolute; top: 3em; right: 3em; font-size: .8em;">
                     <h2 style="text-align: center;">狼出现频率（按数量，供参考）</h2>
                     <div id="main" style="width: 400px;height:200px;"></div>
@@ -393,13 +454,19 @@
             </div>
 
             <script type="module">
-                $(document).ready(() => {
+                import { GlobalData } from "./js/ado/GlobalData.js";
+                import { GameMap } from "./js/module/map/GameMap.js";
+                import { Monster } from "./js/module/unit/Monster.js";
+                import { MonsterManager } from "./js/command/unit.js";
+                import { InitLoad } from "./js/InitLoad.js";
+
+                InitLoad.ready(() => {
                     let $this = $('[data-section="umap-wolf"]');
 
                     //console.log(parseInt(/(?<=m).+(?=[A-Z]*)/.exec("m9C")[0],20));
 
                     $this.find('[name="umap-id"]').html(
-                        _.map(config["umaps"], (t, k) => [k, t["name"]]).sort((p1, p2) => {
+                        _.map(GlobalData.$_map_Obj, (t, k) => [k, t["name"]]).sort((p1, p2) => {
                             return compareNumber(
                                 parseInt(/(?<=m).+(?=[A-Z]*)/.exec(isAlpha(p1[0].last()) ? p1[0] : p1[0] + "A")[0], 36),
                                 parseInt(/(?<=m).+(?=[A-Z]*)/.exec(isAlpha(p2[0].last()) ? p2[0] : p2[0] + "A")[0], 36),
@@ -408,7 +475,7 @@
                     );
 
                     $this.find('[name="wolf"]').html(
-                        _.map(_.map(config["wolfs"], (t, k) => [k, t["name"]])
+                        _.map(_.map(GlobalData.$_wolfAtt_Obj, (t, k) => [k, t["name"]])
                             .groupBy(t => t[1].includes("camp") ? "防线" : (t[0].includes("D_") ? "噩梦" : "前线"))
                             , (t, k) => `<optgroup label="${k}">${t.sortBy(0).maps(s => `<option value=${s[0]}>${s[1].includes("^") ? s[1].takeFrom("^", 1) : s[1]
                                 }</option>`)
@@ -416,31 +483,43 @@
                     );
 
                     $this.find('[name="umap-id"]').change(showCharts);
+                    $this.find('[name="umap-id"]').change(showMapWolfs);
                     $this.find('[name="umap-id"], [name="wolf"], [name="diff"], [name="score"]').change(calc);
+                    showMapWolfs();
                     showCharts();
                     calc();
 
+                    function showMapWolfs() {
+                        let mid = $this.find('[name="umap-id"] option:selected').val();
+                        $this.find('[name="wolf-buttons"]').html(
+                            GlobalData.$_map_Obj[mid].wolf_proportion
+                                .map(t => MonsterManager.getOnlyExample().getData(t[1]))
+                                .map(t => `<span value="${t.id}">${t.name}<sup>${t.population}</sup></span>`).join("")
+                        );
+                        $this.find('[name="wolf-buttons"]').children().click(function (e) {
+                            $this.find('[name="wolf"]').val(this.getAttribute("value"));
+                            calc();
+                        });
+                    }
+
                     function calc() {
-                        let $this = $('[data-section="umap-wolf"]');
+                        //let $this = $('[data-section="umap-wolf"]');
                         let umap_id = $this.find('[name="umap-id"] option:selected').val();
                         let wolf_id = $this.find('[name="wolf"] option:selected').val();
                         let diff = $this.find('[name="diff"] option:selected').val();
                         let score = $this.find('[name="score"]').val();
 
-                        let hardA = config["umaps"][umap_id]["yield_val"];
-                        let hardB = config["umaps"][umap_id]["hard_ness"];
-                        let ha = config["wolfs"][wolf_id]["hp_factor"]["a"];
-                        let hb = config["wolfs"][wolf_id]["hp_factor"]["b"];
-                        let hc = config["wolfs"][wolf_id]["hp_factor"]["c"];
+                        let mapData = GameMap.getMapData(umap_id);
+                        let level = Math.sqrt(mapData.hardA + mapData.hardB * score);
 
-                        let level = Math.sqrt(hardA + hardB * score);
-                        let hpMax = ((hc * level + hb) * level + ha) * diff;
+                        let wolf = new Monster(wolf_id, level, diff);
+                        wolf.initSkills();
 
-                        $this.find('[name="umap-diff"]').text(`${hardA}, ${hardB}`);
-                        $this.find('[name="hp-factor"]').text(`${ha}, ${hb}, ${hc}`);
-                        $this.find('[name="pass-score"]').text(`${config["umaps"][umap_id]["pass_score"]}`);
+                        $this.find('[name="umap-diff"]').text(`${mapData.hardA}, ${mapData.hardB}`);
+                        $this.find('[name="hp-factor"]').text(`${wolf.monsterData.hpMaxA}, ${wolf.monsterData.hpMaxB}, ${wolf.monsterData.hpMaxC}`);
+                        $this.find('[name="pass-score"]').text(`${mapData.scoreMax}`);
                         $this.find('[name="level"]').text(level.toFixed(2));
-                        $this.find('[name="hpMax"]').text(Math.floor(hpMax));
+                        $this.find('[name="hpMax"]').text(Math.floor(wolf.hpMax));
                     }
 
                     function showCharts() {
@@ -500,14 +579,14 @@
                         let $chartArea = $this.find(".chart-area");
                         $chartArea.children('div').remove();
 
-                        let wolfs = config["umaps"][mid].wolf_proportion.map(t => t[1]);
+                        let wolfs = GlobalData.$_map_Obj[mid].wolf_proportion.map(t => t[1]);
                         let xData = range(0, wavegenFreq[mid].all.length + 1)
                         for (let i = 0; i < wolfs.length; i++) {
                             $chartArea.append('<div style="width: 400px;height:100px;"></div>');
                             let chart = echarts.init($chartArea.children("div:last")[0]);
                             chart.setOption(chartOption);
                             chart.setOption({
-                                title: { text: config.wolfs[wolfs[i]].name, },
+                                title: { text: GlobalData.$_wolfAtt_Obj[wolfs[i]].name, },
                                 xAxis: { data: xData },
                                 series: [{ data: wavegenFreq[mid].each[i] }]
                             });

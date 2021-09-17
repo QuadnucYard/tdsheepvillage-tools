@@ -398,3 +398,195 @@ export class BulletManager extends BaseManager {
         return this.getDataById(_id);
     }
 }
+
+
+export class MonsterData extends BaseUnitData {
+    static SPEAK_ENTER = 0;
+    static SPEAK_IDLE = 1;
+    static SPEAK_INJURY = 2;
+    static SPEAK_DIE = 3;
+    static SPEAK_INVADE = 4;
+    static SPEAK_CAST = 5;
+    static DEFENSE_NULL = 0;
+    static DEFENSE_LIGHT = 1;
+    static DEFENSE_COMMON = 2;
+    static DEFENSE_HEAVY = 3;
+    static DEFENSE_BUILDING = 4;
+    static DEFENSE_BOSS = 5;
+    static DEFENSE_HOLY = 6;
+    static DEFENSE_INVINCIBLE = 7;
+    static DATA_HP_MAX = "hp_factor";
+    static DATA_EXP_MAX = "explev";
+    static DATA_HP_MAX_A = "ha";
+    static DATA_HP_MAX_B = "hb";
+    static DATA_HP_MAX_C = "hc";
+    static DATA_SPEED_BASE = "speed";
+    static DATA_CHARM = "charm";
+    static DATA_HEIGHT = "height";
+    static DATA_WIDTH = "width";
+    static DATA_SPEAK_LIST = "speak";
+    static DATA_POPULATION = "pop";
+    hpMaxA;
+    hpMaxB;
+    hpMaxC;
+    expMaxA;
+    expMaxB;
+    expMaxC;
+    expMaxD;
+    speedBase;
+    charm;
+    height;
+    width;
+    speakList;
+    population;
+
+    constructor(_data) {
+        super(_data);
+        if (_data[MonsterData.DATA_HP_MAX]) {
+            this.hpMaxA = _data[MonsterData.DATA_HP_MAX][BaseUnitData.DATA_A];
+            this.hpMaxB = _data[MonsterData.DATA_HP_MAX][BaseUnitData.DATA_B];
+            this.hpMaxC = _data[MonsterData.DATA_HP_MAX][BaseUnitData.DATA_C];
+        }
+        else {
+            this.hpMaxA = _data[MonsterData.DATA_HP_MAX_A];
+            this.hpMaxB = _data[MonsterData.DATA_HP_MAX_B];
+            this.hpMaxC = _data[MonsterData.DATA_HP_MAX_C];
+        }
+        if (_data[MonsterData.DATA_EXP_MAX]) {
+            this.expMaxA = _data[MonsterData.DATA_EXP_MAX][BaseUnitData.DATA_A];
+            this.expMaxB = _data[MonsterData.DATA_EXP_MAX][BaseUnitData.DATA_B];
+            this.expMaxC = _data[MonsterData.DATA_EXP_MAX][BaseUnitData.DATA_C];
+            this.expMaxD = _data[MonsterData.DATA_EXP_MAX][BaseUnitData.DATA_D];
+        }
+        this.speedBase = _data[MonsterData.DATA_SPEED_BASE];
+        this.charm = _data[MonsterData.DATA_CHARM];
+        this.height = _data[MonsterData.DATA_HEIGHT];
+        this.width = _data[MonsterData.DATA_WIDTH];
+        if (_data[MonsterData.DATA_SPEAK_LIST] instanceof Array) {
+            this.speakList = _data[MonsterData.DATA_SPEAK_LIST];
+        }
+        this.population = _data[MonsterData.DATA_POPULATION];
+    }
+
+    getSpeak(_period = 0) {
+        let _arr = null;
+        if (this.speakList instanceof Array) {
+            if (this.speakList.length > _period) {
+                if (this.speakList[_period] instanceof String) {
+                    return this.speakList[_period];
+                }
+                if (this.speakList[_period] instanceof Array) {
+                    _arr = this.speakList[_period];
+                    return _arr[int(Math.random() * _arr.length)];
+                }
+            }
+        }
+        return "";
+    }
+
+    getSpeakEnter() {
+        return this.getSpeak(MonsterData.SPEAK_ENTER);
+    }
+
+    getSpeakIdle() {
+        return this.getSpeak(MonsterData.SPEAK_IDLE);
+    }
+
+    getSpeakInjury() {
+        return this.getSpeak(MonsterData.SPEAK_INJURY);
+    }
+
+    getSpeakDie() {
+        return this.getSpeak(MonsterData.SPEAK_DIE);
+    }
+
+    getSpeakInvade() {
+        return this.getSpeak(MonsterData.SPEAK_INVADE);
+    }
+
+    getSpeakCast() {
+        return this.getSpeak(MonsterData.SPEAK_CAST);
+    }
+
+    get isBoss() {
+        if (this.population >= 100) {
+            return true;
+        }
+        return false;
+    }
+
+    get isRandomBoss() {
+        if (this.population == 99) {
+            return true;
+        }
+        return false;
+    }
+}
+
+
+export class MonsterManager extends BaseManager {
+    static onlyExample = null;
+
+    constructor() {
+        super();
+        MonsterManager.onlyExample = this;
+        this.loadData(GlobalData.$_wolfAtt_Obj);
+    }
+
+    static getOnlyExample() {
+        if (MonsterManager.onlyExample == null) {
+            MonsterManager.onlyExample = new MonsterManager();
+        }
+        return MonsterManager.onlyExample;
+    }
+
+    loadData(_data) {
+        let _d = undefined;
+        let k = undefined;
+        for (k in _data) {
+            _d = _data[k];
+            _d[BaseData.DATA_ID] = k;
+            this.m_manager[k] = new MonsterData(_d);
+        }
+    }
+
+    getBossList(_monsterList) {
+        let i = 0;
+        let _monsterData = null;
+        let _bossList = [];
+        if (!(_monsterList instanceof Array)) {
+            return _bossList;
+        }
+        for (i = 0; i < _monsterList.length; i++) {
+            _monsterData = this.getData(_monsterList[i]);
+            if (_monsterData) {
+                if (_monsterData.isBoss) {
+                    _bossList.push(_monsterList[i]);
+                }
+            }
+        }
+        return _bossList;
+    }
+
+    getRandomBossList(_monsterList) {
+        let i = 0;
+        let _monsterData = null;
+        let _bossList = [];
+        if (!(_monsterList instanceof Array)) {
+            return _bossList;
+        }
+        for (i = 0; i < _monsterList.length; i++) {
+            _monsterData = this.getData(_monsterList[i]);
+            if (_monsterData) {
+                if (_monsterData.isRandomBoss) {
+                    _bossList.push(_monsterList[i]);
+                }
+            }
+        }
+        return _bossList;
+    }
+
+    getData(_id) {
+        return this.getDataById(_id);
+    }
+}

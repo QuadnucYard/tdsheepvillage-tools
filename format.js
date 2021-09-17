@@ -9,7 +9,11 @@ window.WebFontConfig = {
 };
 
 function formatHtml(_str, _color = 0, _b = false, _size = 14, _font = "") {
-    return `<p style="color:#${pad(_color.toString(16), 6)};${_b ? "font-weight:bold;" : ""}font-size:${_size};${_font ? `font-family:${_font};` : ""}">${_str.replaceAll("\n", "<br>")}</p>`;
+    return `<span style="color:#${pad(_color.toString(16), 6)};${_b ? "font-weight:bold;" : ""}${_size ? `font-size:${_size};` : ""}${_font ? `font-family:${_font};` : ""}">${_str.replaceAll("\n", "<br>")}</span>`;
+}
+
+function formatHtmlBr(_arr) {
+    return _arr.join("<br>");
 }
 
 const katexConfig = {
@@ -18,7 +22,7 @@ const katexConfig = {
     fleqn: false,
     throwOnError: false,
     errorColor: '#cc0000',
-    strict: 'warn',
+    strict: 'ignore',
     output: 'htmlAndMathml',
     trust: false,
     macros: {}
@@ -30,7 +34,7 @@ const katexConfigD = {
     fleqn: false,
     throwOnError: false,
     errorColor: '#cc0000',
-    strict: 'warn',
+    strict: 'ignore',
     output: 'htmlAndMathml',
     trust: false,
     macros: {}
