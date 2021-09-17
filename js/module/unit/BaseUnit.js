@@ -19,8 +19,6 @@ export class BaseUnit extends BaseDisplayModule {
     static AOE_SILENCE_RANGE = 1000;
     static AOE_SILENCE_TIME = 2;
     static INFO_HEIGHT = 20;
-    DEPTH_X = 1.0E-4;
-    DEPTH_Y = 10000;
     id;
     subPosX;
     subPosY;

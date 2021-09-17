@@ -104,7 +104,6 @@
                     let $this = $('[data-section="user"]');
 
                     $this.find('[name="level"]').change(showData);
-
                     showData();
 
                     function showData() {
@@ -204,6 +203,8 @@
                     $this.find('[name="isDefendMap"], [name="tower-id"], [name="gem-id"], [name="level"]').change(showData);
                     $this.find('[name="isDefendMap"], [name="build-from"], [name="build-to"], [name="build-power"]').change(calcBuildTime);
 
+                    GameMap.currentMap = new GameMap("m1");
+
                     showData();
                     calcBuildTime();
 
@@ -214,7 +215,8 @@
                         let gem_id = $this.find('[name="gem-id"] option:selected').val();
                         let level = parseInt($this.find('[name="level"]').val());
 
-                        GameMap.currentMap.isDefendMap = $this.find('[name="isDefendMap"]').prop("checked");
+                        GameMap.currentMap = new GameMap($this.find('[name="isDefendMap"]').prop("checked") ?
+                            GameMap.DEFEND_MAP_1 : GameMap.ENDLESS_MAP_1);
 
                         let towerData = GlobalData.$_towerAtt_Obj[tower_id];
                         let tower = new Tower(tower_id);
@@ -270,7 +272,6 @@
                 <p>pop 为狼在一波中占的容量，一般来说 pop 越大则出现机会越少。</p>
                 <p>charm 影响到寻路，charm 为负值越小则其他狼越会排斥它。</p>
                 <p>hp_factor 影响血量关于等级增长，是二次函数系数。</p>
-                <p>目前技能显示供参考，未应用语言文件。</p>
                 <table class="pure-table" style="font-size: smaller;">
                     <thead>
                         <tr>
@@ -446,10 +447,9 @@
                     <label>等级：</label><label name="level"></label>
                     <label>最大血量：</label><label name="hpMax"></label>
                 </p>
+                <div class="hp-chart" style="width: 600px; height: 300px;"></div>
                 <div class="chart-area" style="position: absolute; top: 3em; right: 3em; font-size: .8em;">
                     <h2 style="text-align: center;">狼出现频率（按数量，供参考）</h2>
-                    <div id="main" style="width: 400px;height:200px;"></div>
-                    <div id="main2" style="width: 400px;height:300px;"></div>
                 </div>
             </div>
 
@@ -459,11 +459,11 @@
                 import { Monster } from "./js/module/unit/Monster.js";
                 import { MonsterManager } from "./js/command/unit.js";
                 import { InitLoad } from "./js/InitLoad.js";
+                import { Wave } from "./js/module/map/Wave.js";
+                import { WaveData } from "./js/command/map.js";
 
                 InitLoad.ready(() => {
                     let $this = $('[data-section="umap-wolf"]');
-
-                    //console.log(parseInt(/(?<=m).+(?=[A-Z]*)/.exec("m9C")[0],20));
 
                     $this.find('[name="umap-id"]').html(
                         _.map(GlobalData.$_map_Obj, (t, k) => [k, t["name"]]).sort((p1, p2) => {
@@ -481,16 +481,32 @@
                                 }</option>`)
                                 }</optgroup>`)
                     );
+                    
+                    //初始选择
+                    $this.find('[name="diff"]')[0].selectedIndex = 2;
+                    $this.find('[name="wolf"] option[value="dahuil"]')[0].selected = true;
+                    
+                    //事件
+                    $this.find('[name="score"]').click(function(e) {
+                        
+                    });
+                    $this.find('[name="pass-score"]').click(function(e) {
+                        $this.find('[name="score"]').val(this.innerHTML);
+                        calc();
+                    })
+                    $this.find('[name="umap-id"]').change(onMapChanged);
+                    $this.find('[name="wolf"], [name="diff"], [name="score"]').change(calc);
+                    onMapChanged();
 
-                    $this.find('[name="umap-id"]').change(showCharts);
-                    $this.find('[name="umap-id"]').change(showMapWolfs);
-                    $this.find('[name="umap-id"], [name="wolf"], [name="diff"], [name="score"]').change(calc);
-                    showMapWolfs();
-                    showCharts();
-                    calc();
-
-                    function showMapWolfs() {
+                    function onMapChanged() {
                         let mid = $this.find('[name="umap-id"] option:selected').val();
+                        GameMap.currentMap = new GameMap(mid);
+                        showMapWolfs(mid);
+                        calc();
+                        showCharts(mid);
+                    }
+
+                    function showMapWolfs(mid) {
                         $this.find('[name="wolf-buttons"]').html(
                             GlobalData.$_map_Obj[mid].wolf_proportion
                                 .map(t => MonsterManager.getOnlyExample().getData(t[1]))
@@ -503,11 +519,10 @@
                     }
 
                     function calc() {
-                        //let $this = $('[data-section="umap-wolf"]');
                         let umap_id = $this.find('[name="umap-id"] option:selected').val();
                         let wolf_id = $this.find('[name="wolf"] option:selected').val();
-                        let diff = $this.find('[name="diff"] option:selected').val();
-                        let score = $this.find('[name="score"]').val();
+                        let diff = parseFloat($this.find('[name="diff"] option:selected').val());
+                        let score = parseInt($this.find('[name="score"]').val());
 
                         let mapData = GameMap.getMapData(umap_id);
                         let level = Math.sqrt(mapData.hardA + mapData.hardB * score);
@@ -520,9 +535,63 @@
                         $this.find('[name="pass-score"]').text(`${mapData.scoreMax}`);
                         $this.find('[name="level"]').text(level.toFixed(2));
                         $this.find('[name="hpMax"]').text(Math.floor(wolf.hpMax));
+
+                        showHpChart(umap_id);
                     }
 
-                    function showCharts() {
+                    function showHpChart(mid) {
+                        const chartOption = {
+                            color: ["#00A2E8"],
+                            title: {
+                                left: 'center',
+                                textStyle: {
+                                    fontStyle: 'normal',
+                                    fontFamily: 'sans-serif',
+                                    fontSize: 16
+                                }
+                            },
+                            tooltip: {},
+                            legend: { show: false },
+                            xAxis: {
+                                type: 'value',
+                                axisLine: {
+                                    show: true,
+                                    lineStyle: { width: 1, type: 'solid' }
+                                }
+                            },
+                            yAxis: {
+                                type: 'category',
+                                axisTick: { alignWithLabel: true },
+                                axisLabel: {
+                                    textStyle: { fontSize: 14 }
+                                }
+                            },
+                            grid: { x: 100, y: 30, y2: 20 },
+                            series: [{
+                                type: 'bar', barWidth: '60%',
+                                label: {
+                                    show: true,
+                                    position: 'right'
+                                },
+                                showBackground: true,
+                                backgroundStyle: { color: 'rgba(180, 180, 180, 0.2)' }
+                            }]
+                        };
+
+                        let _mapData = GameMap.getMapData(mid);
+                        GameMap.currentMap.score = parseInt($this.find('[name="score"]').val());
+                        let _wave = new Wave(new WaveData({ hard_ness: parseFloat($this.find('[name="diff"] option:selected').val()) }));
+                        let _wolfList = _mapData.monsterList.map(t => new Monster(t, _wave.difficultyLevel, _wave.difficultyValue))
+                        let chart = echarts.init($(".hp-chart")[0]);
+                        chart.setOption(chartOption);
+                        chart.setOption({
+                            title: { text: "当前狼血量", },
+                            yAxis: { data: _wolfList.map(t => t.monsterData.name) },
+                            series: [{ data: _wolfList.map(t => t.hpMax) }]
+                        });
+                    }
+
+                    function showCharts(mid) {
                         const chartOption = {
                             color: ["#92D050"],
                             title: {
@@ -541,40 +610,20 @@
                             },
                             yAxis: {
                                 type: 'value',
-                                //min: 0.0,
-                                //max: 1.0,
-                                //interval: 0.2,
                                 axisLine: {
                                     show: true,
-                                    lineStyle: {
-                                        width: 1,
-                                        type: 'solid'
-                                    }
+                                    lineStyle: { width: 1, type: 'solid' }
                                 },
                                 axisTick: {
                                     show: true,
                                     inside: true,
                                     length: 3,
-                                    lineStyle: {
-                                        width: 1,
-                                        type: 'solid'
-                                    }
+                                    lineStyle: { width: 1, type: 'solid' }
                                 }
                             },
-                            grid: {
-                                x1: 10,
-                                x2: 10,
-                                y: 10,
-                                y2: 20
-                            },
-                            series: [{
-                                type: 'bar',
-                                barWidth: '90%'
-                            }]
+                            grid: { x1: 10, x2: 10, y: 10, y2: 20 },
+                            series: [{ type: 'bar', barWidth: '90%' }]
                         };
-
-                        let $this = $('[data-section="umap-wolf"]');
-                        let mid = $this.find('[name="umap-id"] option:selected').val();
 
                         let $chartArea = $this.find(".chart-area");
                         $chartArea.children('div').remove();

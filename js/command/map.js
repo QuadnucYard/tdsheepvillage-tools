@@ -80,3 +80,71 @@ export class GameMapManager extends BaseManager {
         return this.getDataById(_id);
     }
 }
+
+
+export class WaveData {
+    static UNKENNEL_RULE_RANDOM = -1;
+    static UNKENNEL_RULE_SAME_TIME = 0;
+    static UNKENNEL_RULE_FOLLOWED = 1;
+    static RETURN_TAG_NO = 0;
+    static RETURN_TAG_IN = 1;
+    static RETURN_TAG_OUT = 2;
+    static DENSITY_DIFFICULTY = 0.25;
+    static SOLO_DIFFICULTY = 0.25;
+    static DATA_MONSTER_LIST = "data";
+    static DATA_DIFFICULTY = "hard_ness";
+    static DATA_GIFT = "gift";
+    static DATA_UNKENNEL_DENSITY = "density";
+    static DATA_UNKENNEL_SOLO = "solo";
+    static DATA_UNKENNEL_RETURN = "return";
+    monsterList;
+    difficulty;
+    gift;
+    unkennelDensity;
+    unkennelSolo;
+    unkennelReturn;
+    tameList;
+
+    constructor(_data) {
+        if (_data instanceof Array) {
+            this.tameList = _data;
+        }
+        this.monsterList = _data[WaveData.DATA_MONSTER_LIST];
+        if (_data[WaveData.DATA_DIFFICULTY]) {
+            this.difficulty = _data[WaveData.DATA_DIFFICULTY];
+        } else {
+            this.difficulty = 1;
+        }
+        this.gift = _data[WaveData.DATA_GIFT];
+        this.unkennelDensity = 1;
+        this.unkennelSolo = -1;
+        this.unkennelReturn = 0;
+    }
+
+    get densityDifficulty() {
+        return 1 / Math.pow(this.unkennelDensity, WaveData.DENSITY_DIFFICULTY);
+    }
+
+    get isSolo() {
+        if (this.unkennelSolo < 0) {
+            return false;
+        }
+        return true;
+    }
+
+    get isReturn() {
+        if (this.unkennelReturn == 0) {
+            return false;
+        }
+        return true;
+    }
+
+    get difficultyScore() {
+        let _num = Math.floor((this.difficulty - 0.75) / 0.2);
+        return 1 + _num;
+    }
+
+    get isTame() {
+        return this.tameList instanceof Array;
+    }
+}

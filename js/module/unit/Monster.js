@@ -12,14 +12,6 @@ export class Monster extends BaseUnit {
     static STATUS_MOVE = "statusMove";
     static RES_AIMING = "aiming";
     static PATH_PATH = "pathPath";
-    static BLOOD_SLOT_FLOAT = 15;
-    static SPEAK_FLOAT = 20;
-    static CAST_SIGN_FLOAT = 30;
-    static APPEAR_TIME = 0.5;
-    static DEAD_TIME = 0.5;
-    static DEAD_TIME_DELAY = 1;
-    static TELEPORT_TIME = 0.4;
-    static TELEPORT_SCALE = 0.7;
     static PHOTO_WIDTH = 66;
     static PHOTO_HEIGHT = 64;
     static PHOTO_ROUND = 50;
@@ -230,7 +222,7 @@ export class Monster extends BaseUnit {
     set level(_level) {
         this.m_level = Math.max(Math.min(_level, this.levelMax), 0);
         if (GameMap.currentMap && GameMap.currentMap) {
-            this.hpMax = (this.monsterData.hpMaxA + this.monsterData.hpMaxB * this.m_level + this.monsterData.hpMaxC * this.m_level * this.m_level) * this.hpRate;
+            this.hpMax = parseInt((this.monsterData.hpMaxA + this.monsterData.hpMaxB * this.m_level + this.monsterData.hpMaxC * this.m_level * this.m_level) * this.hpRate);
         }
         if (this.hpMax <= 1) {
             this.hpMax = 1;
@@ -238,7 +230,7 @@ export class Monster extends BaseUnit {
     }
 
     refreshLevel() {
-        this.hpMax = (this.monsterData.hpMaxA + this.monsterData.hpMaxB * this.m_level + this.monsterData.hpMaxC * this.m_level * this.m_level) * this.hpRate * GameMap.currentMap.unkennelSoloDifficulty;
+        this.hpMax = parseInt((this.monsterData.hpMaxA + this.monsterData.hpMaxB * this.m_level + this.monsterData.hpMaxC * this.m_level * this.m_level) * this.hpRate * GameMap.currentMap.unkennelSoloDifficulty);
         if (this.hpMax <= 1) {
             this.hpMax = 1;
         }
