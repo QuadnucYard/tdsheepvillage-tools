@@ -32,6 +32,7 @@ export class InitLoad {
         GlobalData.$_barrierAtt_Obj = data.barrier;
         GlobalData.$_level_up_gift = data.level_up_gift;
         GlobalData.$_pass_map_gift = data.pass_map_gift;
+        GlobalData.$Maps = data["version_ctrl"]["Maps"];
 
         let _pvp = data["camp_system_simple"];
         if (_pvp) {

@@ -39,6 +39,5 @@ export class GlobalData {
     static $_skill_grade_score;
     static $_global_properties;
     static $_camp_wolf_lv_max;
-
-    static umapsById;
+    static $Maps;
 };

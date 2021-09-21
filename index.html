@@ -96,6 +96,7 @@
                 <p><label>升级经验：<label name="max-exp"></label></label></p>
                 <p><label>力量：<label name="power"></label></label></p>
                 <p><label>连升等级：<label name="upgrade-level"></label></label></p>
+                <p><label>苦工价格：<label name="slave-gold"></label></label></p>
             </div>
             <script type="module">
                 import { InitLoad } from "./js/InitLoad.js";
@@ -110,10 +111,12 @@
                         let $this = $('[data-section="user"]');
 
                         let level = parseInt($this.find('[name="level"]').val());
+                        let _power = Math.round((0.015 * level + 0.8) * level + 2);
 
-                        $this.find('[name="max-exp"]').text(((2 * level + 9) * level + 16) * level + 29);
-                        $this.find('[name="power"]').text(Math.round((0.015 * level + 0.8) * level + 2));
+                        $this.find('[name="max-exp"]').text(((2 * (level + 1) + 3) * (level + 1) + 4) * (level + 1) + 20);
+                        $this.find('[name="power"]').text(_power);
                         $this.find('[name="upgrade-level"]').text(Math.floor(level / 4 + 1));
+                        $this.find('[name="slave-gold"]').text((level + 7) * _power);
                     }
 
                 });
@@ -318,6 +321,7 @@
                         let _htmlTextArr = [];
 
                         _htmlTextArr.push(getSkillSign(_skill) + " " + formatHtml(_skill.name, 0x000040, true, "") + "&nbsp;");
+                        _htmlTextArr.push(formatHtml(`Lv${_skill.level} `, 0x000040, true, ""));
                         _htmlTextArr.push(formatHtml(`[${_skill.data.id}] `, 0x777777, true, "smaller"));
                         _htmlTextArr.push(formatHtml(_skill.skillInfo, 0x333333, false, "smaller"));
                         if (_skill.skillTag1) _htmlTextArr.push(formatHtml(_skill.skillTag1, _tagColor, false, "small"));
@@ -338,6 +342,9 @@
                 <p>狼的等级随进度增加而增加。难度系数 hardA 影响初始狼等级，hardB 影响等级增长速率。</p>
                 <p>population 影响一波狼的容量。每只狼都会占用一定容量。</p>
                 <p>不同随机boss有出现权重。出现率、难度、奖励水平是相对应的，难的比较稀有，奖励也会比较好。</p>
+                <script>
+                    document.write(marked(`\`unkennelRule\`：-1=RANDOM, 0=SAME_TIME, 1,2,...=FOLLOWED`))
+                </script>
                 <table class="pure-table" style="font-size: small;">
                     <thead>
                         <tr>
@@ -367,9 +374,9 @@
 
                 InitLoad.ready(() => {
                     let $this = $('[data-section="umaps"]');
-                    $this.find(".content table tbody").append(GlobalData.umapsById.map(t => ((k, t) =>
+                    $this.find(".content table tbody").append(GlobalData.$Maps.map(k => ((k, t) =>
                         `<tr>
-                            <td>${GlobalData.umapsById.findIndex(t => t[0] == k)}</td>
+                            <td>${GlobalData.$Maps.indexOf(k)}</td>
                             <td>${k}</td>
                             <td>${t.name}</td>
                             <td>${t.need_lev || 0}</td>
@@ -385,11 +392,10 @@
                             <td class="align-left">${_.map(t.random_boss?.map(t =>
                             [GlobalData.$_wolfAtt_Obj[t[1]].name, t[2], Object.entries(t[3].properties.card)[0]]).groupBy(0), (t, k) =>
                             `${k}{${t.maps(u => `${u[1]},${GlobalData.$_global_properties.card[u[2][0]].name.takeFrom('^', 1)}*${u[2][1]}`, "; ")}}`
-
                         ).join(", ") || ""
                         }</td>
                         </tr>`
-                    )(...t)).join(", "))
+                    )(k, GlobalData.$_map_Obj[k])).join(", "))
                     $(document).ready(() => sortTable('[data-section="umaps"] table'));
                 });
             </script>
@@ -451,6 +457,12 @@
                 <div class="chart-area" style="position: absolute; top: 3em; right: 3em; font-size: .8em;">
                     <h2 style="text-align: center;">狼出现频率（按数量，供参考）</h2>
                 </div>
+                <p>
+                    <button name="btn-generate">随机生成一波</button>
+                    <label name="wave-info"></label>
+                </p>
+                <p><input type="text" name="wave-data" spellcheck="false" style="width: 40em;"></p>
+                <p><input type="text" name="wave-data-raw" spellcheck="false" style="width: 40em;"></p>
             </div>
 
             <script type="module">
@@ -481,19 +493,36 @@
                                 }</option>`)
                                 }</optgroup>`)
                     );
-                    
+
                     //初始选择
                     $this.find('[name="diff"]')[0].selectedIndex = 2;
                     $this.find('[name="wolf"] option[value="dahuil"]')[0].selected = true;
-                    
+
                     //事件
-                    $this.find('[name="score"]').click(function(e) {
-                        
+                    $this.find('[name="score"]').click(function (e) {
+
                     });
-                    $this.find('[name="pass-score"]').click(function(e) {
+                    $this.find('[name="pass-score"]').click(function (e) {
                         $this.find('[name="score"]').val(this.innerHTML);
                         calc();
-                    })
+                    });
+                    $this.find('[name="btn-generate"]').click(function (e) {
+                        let mid = $this.find('[name="umap-id"] option:selected').val();
+                        let mlist = generateWave(mid);
+                        $this.find('[name="wave-data-raw"]').val(`[${mlist}]`);
+                        $this.find('[name="wave-data"]').val(mlist.map(t => GlobalData.$_wolfAtt_Obj[t].name));
+
+                        let diff = parseFloat($this.find('[name="diff"] option:selected').val());
+                        let score = parseInt($this.find('[name="score"]').val());
+                        let mapData = GameMap.getMapData(mid);
+                        let level = Math.sqrt(mapData.hardA + mapData.hardB * score);
+                        let totalHp = 0;
+                        for (let wolf_id of mlist) {
+                            totalHp += (new Monster(wolf_id, level, diff)).hpMax;
+                        }
+                        $this.find('[name="wave-info"]').text(`共 ${mlist.length} 只狼，平均血量 ${Math.round(totalHp / mlist.length)}`);
+                    });
+
                     $this.find('[name="umap-id"]').change(onMapChanged);
                     $this.find('[name="wolf"], [name="diff"], [name="score"]').change(calc);
                     onMapChanged();
@@ -651,6 +680,33 @@
                                 series: [{ data: wavegenFreq[mid].all }]
                             });
                         }
+                    }
+
+                    function generateWave(mid) {
+                        let umap = GlobalData.$_map_Obj[mid];
+                        let one = 1.0;
+                        let pop = umap.pop_max;
+                        let wolfProp = umap.wolf_proportion.map(t => t[0]);
+                        let wolfPop = umap.wolf_proportion.map(t => GlobalData.$_wolfAtt_Obj[t[1]].pop);
+                        let wolfs = umap.wolf_proportion.map(t => t[1]);
+                        let n = wolfPop.length;
+                        if (n == 0) return [];
+
+                        let mlist = []; // 狼组成
+                        let clist = new Array(n).fill(0); // 各种狼数量
+
+                        while (pop > 0) {
+                            while (pop < wolfPop[n - 1]) {
+                                n--;
+                            }
+                            one = wolfProp[n - 1];
+                            let p = Math.random() * one;
+                            let k = _.findIndex(wolfProp, t => p < t);
+                            pop -= wolfPop[k];
+                            mlist.push(wolfs[k]);
+                            clist[k]++;
+                        }
+                        return mlist;
                     }
                 });
 
