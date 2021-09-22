@@ -351,17 +351,18 @@
                             <th class="sortable" title="no">No</th>
                             <th class="sortable" title="id">id</th>
                             <th class="sortable" title="name">name</th>
-                            <th class="sortable" title="需要等级">needLevel</th>
-                            <th class="sortable" title="通关进度(pass_score)">scoreMax</th>
+                            <th class="sortable" title="需要等级">need<br>level</th>
+                            <th class="sortable" title="通关进度(pass_score)">score<br>max</th>
                             <th class="sortable" title="难度系数(yield_val)">hardA</th>
                             <th class="sortable" title="难度系数(hard_ness)">hardB</th>
-                            <th class="sortable" title="最大population">population<br>max</th>
+                            <th class="sortable" title="最大population">pop<br>max</th>
                             <th class="sortable" title="狼出场间隔(s)">unkennel<br>delay</th>
                             <th class="sortable" title="狼出场规则">unkennel<br>rule</th>
                             <th class="sortable" title="传送规则">teleport<br>rule</th>
                             <th title="需要通过">passBy</th>
                             <th title="关卡狼列表（方括号中为pop数）">monsterList</th>
                             <th title="随机Boss列表（花括号中显示难度和对应的奖励）">randomBoss</th>
+                            <th title="Boss波组成">boss</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -388,14 +389,18 @@
                             <td>${t.interval_rule}</td>
                             <td>${t.teleport_rule || ""}</td>
                             <td>${t.pass_by.map(u => GlobalData.$_map_Obj[u].name)}</td>
-                            <td class="align-left">${t.wolf_proportion.map(t => GlobalData.$_wolfAtt_Obj[t[1]]).map(t => `${t.name}[${t.pop}]`).join(", ")}</td>
+                            <td class="align-left">${t.wolf_proportion.map(t => [GlobalData.$_wolfAtt_Obj[t[1]], t[0]]).map(t => `<sub>${t[1]}</sub>${t[0].name}<sup>${t[0].pop}</sup>`).join(", ")}</td>
                             <td class="align-left">${_.map(t.random_boss?.map(t =>
-                            [GlobalData.$_wolfAtt_Obj[t[1]].name, t[2], Object.entries(t[3].properties.card)[0]]).groupBy(0), (t, k) =>
-                            `${k}{${t.maps(u => `${u[1]},${GlobalData.$_global_properties.card[u[2][0]].name.takeFrom('^', 1)}*${u[2][1]}`, "; ")}}`
+                            [GlobalData.$_wolfAtt_Obj[t[1]].name, t[0], t[2], Object.entries(t[3].properties.card)[0]]).groupBy(0), (t, k) =>
+                            `${k}{${t.maps(u => `<sub>${u[1]}</sub>${u[2]},${GlobalData.$_global_properties.card[u[3][0]].name.takeFrom('^', 1)}*${u[3][1]}`, "; ")}}`
                         ).join(", ") || ""
                         }</td>
+                            <td class="align-left">${t.boss.map(t => GlobalData.$_wolfAtt_Obj[t]?.name)}</td>
                         </tr>`
                     )(k, GlobalData.$_map_Obj[k])).join(", "))
+                    $this.find(".content table tbody tr").click(function(e) {
+                        $(this).toggleClass("selected")
+                    })
                     $(document).ready(() => sortTable('[data-section="umaps"] table'));
                 });
             </script>
@@ -559,7 +564,7 @@
                         let wolf = new Monster(wolf_id, level, diff);
                         wolf.initSkills();
 
-                        $this.find('[name="umap-diff"]').text(`${mapData.hardA}, ${mapData.hardB}`);
+                        $this.find('[name="umap-diff"]').text(`${mapData.populationMax} | ${mapData.hardA}, ${mapData.hardB}`);
                         $this.find('[name="hp-factor"]').text(`${wolf.monsterData.hpMaxA}, ${wolf.monsterData.hpMaxB}, ${wolf.monsterData.hpMaxC}`);
                         $this.find('[name="pass-score"]').text(`${mapData.scoreMax}`);
                         $this.find('[name="level"]').text(level.toFixed(2));
