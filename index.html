@@ -393,12 +393,11 @@
                             <td class="align-left">${_.map(t.random_boss?.map(t =>
                             [GlobalData.$_wolfAtt_Obj[t[1]].name, t[0], t[2], Object.entries(t[3].properties.card)[0]]).groupBy(0), (t, k) =>
                             `${k}{${t.maps(u => `<sub>${u[1]}</sub>${u[2]},${GlobalData.$_global_properties.card[u[3][0]].name.takeFrom('^', 1)}*${u[3][1]}`, "; ")}}`
-                        ).join(", ") || ""
-                        }</td>
+                        ).join(", ") || ""}</td>
                             <td class="align-left">${t.boss.map(t => GlobalData.$_wolfAtt_Obj[t]?.name)}</td>
                         </tr>`
                     )(k, GlobalData.$_map_Obj[k])).join(", "))
-                    $this.find(".content table tbody tr").click(function(e) {
+                    $this.find(".content table tbody tr").click(function (e) {
                         $(this).toggleClass("selected")
                     })
                     $(document).ready(() => sortTable('[data-section="umaps"] table'));
@@ -458,16 +457,17 @@
                     <label>等级：</label><label name="level"></label>
                     <label>最大血量：</label><label name="hpMax"></label>
                 </p>
-                <div class="hp-chart" style="width: 600px; height: 300px;"></div>
-                <div class="chart-area" style="position: absolute; top: 3em; right: 3em; font-size: .8em;">
-                    <h2 style="text-align: center;">狼出现频率（按数量，供参考）</h2>
-                </div>
+                <div class="hp-chart" style="width: 600px; height: 200px;"></div>
                 <p>
                     <button name="btn-generate">随机生成一波</button>
                     <label name="wave-info"></label>
                 </p>
                 <p><input type="text" name="wave-data" spellcheck="false" style="width: 40em;"></p>
                 <p><input type="text" name="wave-data-raw" spellcheck="false" style="width: 40em;"></p>
+                <div class="wave-histogram" style="width: 600px; height: 150px;"></div>
+                <div class="chart-area" style="position: absolute; top: 3em; right: 3em; font-size: .8em;">
+                    <h2 style="text-align: center;">狼出现频率（按数量，供参考）</h2>
+                </div>
             </div>
 
             <script type="module">
@@ -514,7 +514,7 @@
                     $this.find('[name="btn-generate"]').click(function (e) {
                         let mid = $this.find('[name="umap-id"] option:selected').val();
                         let mlist = generateWave(mid);
-                        $this.find('[name="wave-data-raw"]').val(`[${mlist}]`);
+                        $this.find('[name="wave-data-raw"]').val(`[${mlist.map(t => `"${t}"`)}]`);
                         $this.find('[name="wave-data"]').val(mlist.map(t => GlobalData.$_wolfAtt_Obj[t].name));
 
                         let diff = parseFloat($this.find('[name="diff"] option:selected').val());
@@ -670,7 +670,7 @@
                             chart.setOption(chartOption);
                             chart.setOption({
                                 title: { text: GlobalData.$_wolfAtt_Obj[wolfs[i]].name, },
-                                xAxis: { data: xData },
+                                xAxis: { data: xData, max: wavegenFreq[mid].all.length - 1 },
                                 series: [{ data: wavegenFreq[mid].each[i] }]
                             });
                         }
@@ -681,7 +681,7 @@
                             chart.setOption({
                                 color: ["#FF7F27"],
                                 title: { text: "全部", },
-                                xAxis: { data: xData },
+                                xAxis: { data: xData, max: wavegenFreq[mid].all.length - 1 },
                                 series: [{ data: wavegenFreq[mid].all }]
                             });
                         }
@@ -711,6 +711,35 @@
                             mlist.push(wolfs[k]);
                             clist[k]++;
                         }
+    
+                        const chartOption = {
+                            color: ["#C00000"],
+                            xAxis: {
+                                type: 'value',
+                                interval: 1,
+                                axisLine: { show: true, lineStyle: { width: 1, type: 'solid' } }
+                            },
+                            yAxis: {
+                                type: 'category',
+                                axisTick: { alignWithLabel: true },
+                                axisLabel: { textStyle: { fontSize: 14 } }
+                            },
+                            grid: { x: 100, y: 0, y2: 20 },
+                            series: [{
+                                type: 'bar', barWidth: '60%',
+                                label: { show: true, position: 'right' },
+                                showBackground: true,
+                                backgroundStyle: { color: 'rgba(180, 180, 180, 0.2)' }
+                            }]
+                        };
+                        let chart = echarts.init($(".wave-histogram")[0]);
+                        chart.setOption(chartOption);
+                        chart.setOption({
+                            xAxis: { max: wavegenFreq[mid].all.length - 1 },
+                            yAxis: { data: wolfs.map(t => GlobalData.$_wolfAtt_Obj[t].name) },
+                            series: [{ data: clist }]
+                        });
+
                         return mlist;
                     }
                 });
