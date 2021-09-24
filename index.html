@@ -701,17 +701,19 @@
                         let clist = new Array(n).fill(0); // 各种狼数量
 
                         while (pop > 0) {
-                            while (pop < wolfPop[n - 1]) {
-                                n--;
-                            }
+                            while (n > 0 && pop < wolfPop[n - 1]) n--;
+                            if (n == 0) break;
                             one = wolfProp[n - 1];
-                            let p = Math.random() * one;
-                            let k = _.findIndex(wolfProp, t => p < t);
+                            let k;
+                            do {
+                                let p = Math.random() * one;
+                                k = _.findIndex(wolfProp, t => p < t);
+                            } while (pop < wolfPop[k]);
                             pop -= wolfPop[k];
                             mlist.push(wolfs[k]);
                             clist[k]++;
                         }
-    
+
                         const chartOption = {
                             color: ["#C00000"],
                             xAxis: {
@@ -730,7 +732,8 @@
                                 label: { show: true, position: 'right' },
                                 showBackground: true,
                                 backgroundStyle: { color: 'rgba(180, 180, 180, 0.2)' }
-                            }]
+                            }],
+                            animationDuration: 100
                         };
                         let chart = echarts.init($(".wave-histogram")[0]);
                         chart.setOption(chartOption);
