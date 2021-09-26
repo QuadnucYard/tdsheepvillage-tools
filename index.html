@@ -467,7 +467,9 @@
                 <div class="hp-chart" style="width: 600px; height: 200px;"></div>
                 <p>
                     <button name="btn-generate">随机生成一波</button>
-                    <label name="wave-info"></label>
+                    <span>共<input type="number" name="wave-wolf-count" style="width: 3em;">只狼，平均血量<input type="number"
+                            name="wave-wolf-hp" style="width: 6em;"></span>
+                    <button name="btn-deduce">组成推算</button>
                 </p>
                 <p><input type="text" name="wave-data" spellcheck="false" style="width: 40em;"></p>
                 <p><input type="text" name="wave-data-raw" spellcheck="false" style="width: 40em;"></p>
@@ -532,7 +534,58 @@
                         for (let wolf_id of mlist) {
                             totalHp += (new Monster(wolf_id, level, diff)).hpMax;
                         }
-                        $this.find('[name="wave-info"]').text(`共 ${mlist.length} 只狼，平均血量 ${Math.round(totalHp / mlist.length)}`);
+                        $this.find('[name="wave-wolf-count"]').val(mlist.length);
+                        $this.find('[name="wave-wolf-hp"]').val(Math.round(totalHp / mlist.length));
+                    });
+
+                    $this.find('[name="btn-deduce"]').click(function (e) {
+                        let mid = $this.find('[name="umap-id"] option:selected').val();
+                        let diff = parseFloat($this.find('[name="diff"] option:selected').val());
+                        let count = parseInt($this.find('[name="wave-wolf-count"]').val());
+                        let hpAvg = parseInt($this.find('[name="wave-wolf-hp"]').val());
+
+                        let _mapData = GameMap.getMapData(mid);
+                        GameMap.currentMap.score = parseInt($this.find('[name="score"]').val());
+                        let _wave = new Wave(new WaveData({ hard_ness: parseFloat($this.find('[name="diff"] option:selected').val()) }));
+                        let _wolfList = _mapData.monsterList.map(t => new Monster(t, _wave.difficultyLevel, _wave.difficultyValue))
+
+                        let wolfHp = _wolfList.map(t => t.hpMax);
+                        let wolfPop = _wolfList.map(t => t.monsterData.population);
+                        let hpTotal = hpAvg * count;
+                        let n = _wolfList.length;
+
+                        function proc() {
+                            let bestPop = 100;
+                            let best = [];
+
+                            function rec(d, remCnt, remHp, remPop, c) {
+                                if (d == n - 1) { // 最后一种狼
+                                    remHp -= remCnt * wolfHp[d];
+                                    remPop -= remCnt * wolfPop[d];
+                                    c.push(remCnt);
+                                    if (remPop >= 0 && Math.round(c.map((t, i) => t * wolfHp[i]).sum() / count) == hpAvg) {
+                                        if (remPop < bestPop) {
+                                            bestPop = remPop;
+                                            best = [[...c], remHp, remPop];
+                                        }
+                                    }
+                                    c.pop();
+                                } else { // 继续递归
+                                    c.push(0)
+                                    for (let i = 0; remCnt >= 0 && remHp >= 0 && remPop >= 0; i++) {
+                                        c[c.length - 1] = i;
+                                        rec(d + 1, remCnt, remHp, remPop, c);
+                                        remCnt -= 1;
+                                        remHp -= wolfHp[d];
+                                        remPop -= wolfPop[d];
+                                    }
+                                    c.pop();
+                                }
+                            }
+                            rec(0, count, hpTotal, _mapData.populationMax, []);
+                            return best;
+                        }
+                        showWaveChart(mid, _wolfList.map(t => t.monsterData.name), proc()[0]);
                     });
 
                     $this.find('[name="umap-id"]').change(onMapChanged);
@@ -733,6 +786,11 @@
                             clist[k]++;
                         }
 
+                        showWaveChart(mid, wolfs.map(t => GlobalData.$_wolfAtt_Obj[t].name), clist);
+                        return mlist;
+                    }
+
+                    function showWaveChart(_mid, _y, _data) {
                         const chartOption = {
                             color: ["#C00000"],
                             xAxis: {
@@ -757,12 +815,10 @@
                         let chart = echarts.init($(".wave-histogram")[0]);
                         chart.setOption(chartOption);
                         chart.setOption({
-                            xAxis: { max: wavegenFreq[mid].all.length - 1 },
-                            yAxis: { data: wolfs.map(t => GlobalData.$_wolfAtt_Obj[t].name) },
-                            series: [{ data: clist }]
+                            xAxis: { max: wavegenFreq[_mid].all.length - 1 },
+                            yAxis: { data: _y },
+                            series: [{ data: _data }]
                         });
-
-                        return mlist;
                     }
                 });
 
@@ -798,7 +854,7 @@
                         (t, k) => [k, t.sortBy("id")]).sortBy(0).map(t => t[1]);
                     console.log(skills)
 
-                    let owners=_.map(GlobalData.$_wolfAtt_Obj,(t,k)=>t.skills.map(u=>[u.skid,t.name.replace(/\w+\^/, ""), u.lev])).flat().groupBy(0);
+                    let owners = _.map(GlobalData.$_wolfAtt_Obj, (t, k) => t.skills.map(u => [u.skid, t.name.replace(/\w+\^/, ""), u.lev])).flat().groupBy(0);
                     console.log(owners);
                     $this.find("table tbody").html(
                         skills.map(t => t.map((u, i) =>
@@ -807,7 +863,7 @@
                                 <td>${u.id}</td>
                                 <td>${u.name}</td>
                                 <td class="align-left">${JSON.stringify(u.levels[0])}</td>
-                                <td class="align-left">${owners[u.id]?.map(s=>`${s[1]}<sup>${s[2]}</sup>`) || ""}</td>
+                                <td class="align-left">${owners[u.id]?.map(s => `${s[1]}<sup>${s[2]}</sup>`) || ""}</td>
                             </tr>`))
                     );
 
