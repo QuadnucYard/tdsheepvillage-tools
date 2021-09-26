@@ -284,6 +284,8 @@
                             <th class="sortable">speed</th>
                             <th class="sortable">pop</th>
                             <th class="sortable">charm</th>
+                            <th class="sortable">width</th>
+                            <th class="sortable">height</th>
                             <th>hp_factor</th>
                             <th>skills</th>
                         </tr>
@@ -309,6 +311,8 @@
                             <td>${_wolf.monsterData.speedBase}</td>
                             <td>${_wolf.monsterData.population}</td>
                             <td>${_wolf.monsterData.charm}</td>
+                            <td>${_wolf.monsterData.width}</td>
+                            <td>${_wolf.monsterData.height}</td>
                             <td>${_wolf.monsterData.hpMaxA}, ${_wolf.monsterData.hpMaxB}, ${_wolf.monsterData.hpMaxC}</td>
                             <td>${_.map(_wolf.skills, (t, k) => `<p>${getSkillHtml(t)}</p>`).join("")}</td>
                             </tr>`

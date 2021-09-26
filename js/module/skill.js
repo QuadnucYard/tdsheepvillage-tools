@@ -173,6 +173,7 @@ export class AoeAttackSkill extends TowerSkill {
     get radiiInfo() {
         let _info = null;
         let _radii = this.radii;
+        return _radii.toString();
         if (_radii <= 400) {
             _info = GlobalDataGetValue.getLanguageStr(3510);
         }
