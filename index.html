@@ -554,38 +554,43 @@
                         let hpTotal = hpAvg * count;
                         let n = _wolfList.length;
 
-                        function proc() {
-                            let bestPop = 100;
-                            let best = [];
+                        //直接做一个假设，pop必须用完
 
-                            function rec(d, remCnt, remHp, remPop, c) {
-                                if (d == n - 1) { // 最后一种狼
-                                    remHp -= remCnt * wolfHp[d];
-                                    remPop -= remCnt * wolfPop[d];
-                                    c.push(remCnt);
-                                    if (remPop >= 0 && Math.round(c.map((t, i) => t * wolfHp[i]).sum() / count) == hpAvg) {
-                                        if (remPop < bestPop) {
-                                            bestPop = remPop;
-                                            best = [[...c], remHp, remPop];
-                                        }
-                                    }
-                                    c.pop();
-                                } else { // 继续递归
-                                    c.push(0)
-                                    for (let i = 0; remCnt >= 0 && remHp >= 0 && remPop >= 0; i++) {
-                                        c[c.length - 1] = i;
-                                        rec(d + 1, remCnt, remHp, remPop, c);
-                                        remCnt -= 1;
-                                        remHp -= wolfHp[d];
-                                        remPop -= wolfPop[d];
-                                    }
-                                    c.pop();
+                        let ans = [];
+
+                        function rec(d, remCnt, remHp, remPop, c) {
+                            if (d == n - 1) { // 最后一种狼
+                                remHp -= remCnt * wolfHp[d];
+                                remPop -= remCnt * wolfPop[d];
+                                c.push(remCnt);
+                                if (remPop == 0 && Math.round(c.map((t, i) => t * wolfHp[i]).sum() / count) == hpAvg) {
+                                    ans.push([[...c], remHp, remPop]);
                                 }
+                                c.pop();
+                            } else { // 继续递归
+                                c.push(0)
+                                for (let i = 0; remCnt >= 0 && remHp >= -count && remPop >= 0; i++) {
+                                    c[c.length - 1] = i;
+                                    rec(d + 1, remCnt, remHp, remPop, c);
+                                    remCnt --;
+                                    remHp -= wolfHp[d];
+                                    remPop -= wolfPop[d];
+                                }
+                                c.pop();
                             }
-                            rec(0, count, hpTotal, _mapData.populationMax, []);
-                            return best;
                         }
-                        showWaveChart(mid, _wolfList.map(t => t.monsterData.name), proc()[0]);
+                        rec(0, count, hpTotal, _mapData.populationMax, []);
+
+                        if (ans.length>=1) {
+                            showWaveChart(mid, _wolfList.map(t => t.monsterData.name), ans[0][0]);
+                            if (ans.length>1) {
+                                window.warn(`有${ans.length}个可行解，只显示第一个！`);
+                                console.log(ans);
+                            }
+                        } else {
+                            window.alert("无可行解！请检查参数正确性。");
+                        }
+                        
                     });
 
                     $this.find('[name="umap-id"]').change(onMapChanged);
