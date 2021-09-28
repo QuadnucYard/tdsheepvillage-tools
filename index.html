@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
 
-    <title>TDSheepVillage Tools</title>
+    <title>TDSheepVillage Data Party</title>
 
     <link rel="icon" href="image/icon.jpg" type="image/x-icon">
 
@@ -18,7 +18,7 @@
     <!-- Lib -->
     <script type="text/javascript" src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.5.1.min.js"></script>
     <script type="text/javascript" src="https://underscorejs.net/underscore-min.js"></script>
-    <script type="text/javascript" src="https://cdn.bootcdn.net/ajax/libs/marked/2.1.3/marked.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script type="text/javascript" src="js/echarts.min.js"></script>
 
     <!-- KaTeX -->
@@ -172,6 +172,10 @@
                     &emsp;
                     <label>valueCost: <label name="valueCost"></label></label>
                 </p>
+                <p name="bv-formula"></p>
+                <p name="bc-formula"></p>
+                <p name="vc-formula"></p>
+                <p>其中 $[x]$ 为四舍五入取整。前两者是升级逐级累加后四舍五入取整。</p>
                 <br>
                 <h2>升级计算</h2>
                 <p>
@@ -242,6 +246,13 @@
                         $this.find('[name="buffEffect"]').text(tower.buffEffect().toFixed(1));
                         $this.find('[name="skillInfo"]').html(tower.getInfoHtml());
 
+                        let _td=tower.towerData;
+                        $this.find('[name="bv-formula"]').html(formatKatex(
+                            `\\displaystyle{\\mathrm{buildValue}(n)=${_td.buildValueA}+${_td.buildValueB}n+${_td.buildValueC}n^2}`));
+                        $this.find('[name="bc-formula"]').html(formatKatex(
+                            `\\displaystyle{\\mathrm{buildCost}(n)=${_td.buildCostA}+${_td.buildCostB}n+${_td.buildCostC}n^2}`));
+                            $this.find('[name="vc-formula"]').html(formatKatex(
+                            `\\displaystyle{\\mathrm{valueCost}(n)=[${_td.buildCost-_td.buildCostA-_td.buildCostB-_td.buildCostC}+${_td.buildCostA+_td.buildCostB/2+_td.buildCostC/6}n+${_td.buildCostB/2+_td.buildCostC/2}n^2+${_td.buildCostC/3}n^3]}`));
                     }
 
                     function calcBuildTime() {
@@ -263,7 +274,7 @@
                             buildTime += tower.buildValue(i);
                         }
                         buildTime = Math.round(buildTime / buildPower);
-                        $this.find('[name="build-time"]').text(`${Math.floor(buildTime / 3600)}:${pad(Math.floor(buildTime % 3600 / 60).toString(), 2)}:${pad((buildTime % 60).toString(), 2)}`);
+                        $this.find('[name="build-time"]').text(`${Math.floor(buildTime / 3600)}:${Math.floor(buildTime % 3600 / 60).toString().padStart(2, '0')}:${(buildTime % 60).toString().padStart(2, '0')}`);
                     }
                 });
             </script>
@@ -889,7 +900,7 @@
                 $(document).ready(() => {
                     $.get("static/research_notes.md", function (response, status, xhr) {
                         $('[data-section="research-notes"] .content').html(formatMarktex(response));
-                        //$('[data-section="research-notes"] div').html(marked(response));
+                        $("code:contains(\n)").css("display", "block");
                     });
                 });
             </script>
