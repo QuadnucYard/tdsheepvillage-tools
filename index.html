@@ -479,6 +479,12 @@
                     <label>等级：</label><label name="level"></label>
                     <label>最大血量：</label><label name="hpMax"></label>
                 </p>
+                <p>
+                    <label>银币(估计)：<label name="pk-gold"></label></label>
+                    <label>经验(估计)：<label name="pk-exp"></label></label>
+                    <br>
+                    这里采用估计公式 $y=(ap+b)\sqrt[3]{h_a+h_bx}$
+                </p>
                 <div class="hp-chart" style="width: 600px; height: 200px;"></div>
                 <p>
                     <button name="btn-generate">随机生成一波</button>
@@ -661,6 +667,8 @@
                         $this.find('[name="pass-score"]').text(`${mapData.scoreMax}`);
                         $this.find('[name="level"]').text(level.toFixed(2));
                         $this.find('[name="hpMax"]').text(Math.floor(wolf.hpMax));
+                        $this.find('[name="pk-gold"]').text(Math.round((2.0045*mapData.populationMax+3.7475)*Math.pow(level, 2/3)));
+                        $this.find('[name="pk-exp"]').text(Math.round((0.2624*mapData.populationMax+6.5484)*Math.pow(level, 2/3)));
 
                         showHpChart(umap_id);
                     }
