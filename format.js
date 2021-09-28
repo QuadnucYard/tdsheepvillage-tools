@@ -9,7 +9,7 @@ window.WebFontConfig = {
 };
 
 function formatHtml(_str, _color = 0, _b = false, _size = 14, _font = "") {
-    return `<span style="color:#${pad(_color.toString(16), 6)};${_b ? "font-weight:bold;" : ""}${_size ? `font-size:${_size};` : ""}${_font ? `font-family:${_font};` : ""}">${_str.replaceAll("\n", "<br>")}</span>`;
+    return `<span style="color:#${_color.toString(16).padStart(6, '0')};${_b ? "font-weight:bold;" : ""}${_size ? `font-size:${_size};` : ""}${_font ? `font-family:${_font};` : ""}">${_str.replaceAll("\n", "<br>")}</span>`;
 }
 
 function formatHtmlBr(_arr) {
@@ -44,4 +44,8 @@ function formatMarktex(str) {
     return marked(str.replace(/\$\$[\s\S]+?\$\$/gm, f => `<p>${katex.renderToString(f.substr(2, f.length - 4), katexConfigD)}</p>`)
         .replace(/\$[\s\S]+?\$/gm, f => `<span>${katex.renderToString(f.substr(1, f.length - 2), katexConfig)}</span>`)
     );
+}
+
+function formatKatex(str, block = false) {
+    return block ? katex.renderToString(str, katexConfigD) : katex.renderToString(str, katexConfig);
 }

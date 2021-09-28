@@ -22,5 +22,3 @@ const isAlpha = function (val) { return /^[a-zA-Z]+$/.test(val); }
 const compareNumber = function (a, b) { return a < b ? -1 : a > b ? 1 : 0; };
 
 const compareByLess = function (a, b, less) { return less(a, b) ? -1 : less(b, a) ? 1 : 0; };
-
-const pad = function (str, len, fill = '0') { return str.length >= len ? str : fill.repeat(len - str.length) + str; };
