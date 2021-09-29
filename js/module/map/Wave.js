@@ -1,5 +1,6 @@
 import { WaveData } from "../../command/map.js";
 import { GameMap } from "./GameMap.js";
+import { Monster } from "../unit/Monster.js"
 
 export class Wave {
    static SPEAK_MAX = 2;
@@ -23,6 +24,10 @@ export class Wave {
    constructor(data, _isCurrent = true) {
       this.waveData = data;
       this.initWave(_isCurrent);
+   }
+
+   generate(_monsterList) {
+      return _monsterList.map(t => new Monster(t, this.difficultyLevel, this.difficultyValue));
    }
 
    initWave(_isCurrent = true) {
@@ -109,55 +114,6 @@ export class Wave {
       return null;
    }
 
-   getOwnerName() {
-      let _uid = null;
-      let _uData = null;
-      let _obj = GlobalData.$_userLevelData[UserData.LURED_WOLF];
-      let _uName = GlobalDataGetValue.getLanguageStr(4109);
-      if (!Tools.isNullAndUndefined(_obj)) {
-         _uid = _obj.friend_id;
-         _uData = FriendPanelFun.getFriendData(_uid);
-         if (_uData != null) {
-            if (_uData.name instanceof String && _uData.name != "") {
-               _uName = _uData.name;
-            }
-         }
-      }
-      return _uName;
-   }
-
-   get isReady() {
-      let i = 0;
-      let _wolf = null;
-      if (this.monsterList == null) {
-         return false;
-      }
-      for (i = 0; i < this.monsterList.length; i++) {
-         _wolf = this.monsterList[i];
-         if (DynamicLoad.loadedList[_wolf.monsterData.res] == null) {
-            return false;
-         }
-         if (_wolf.skills != null) {
-            if (_wolf.skills[MonsterSkillData.KIND_SUMMON] instanceof SummonSkill) {
-               if ((_wolf.skills[MonsterSkillData.KIND_SUMMON]).isLoaded == false) {
-                  return false;
-               }
-            }
-            if (_wolf.skills[MonsterSkillData.KIND_TRANSFORM] instanceof TransformSkill) {
-               if ((_wolf.skills[MonsterSkillData.KIND_TRANSFORM]).isLoaded == false) {
-                  return false;
-               }
-            }
-            if (_wolf.skills[MonsterSkillData.KIND_REINCARNATE] instanceof ReincarnateSkill) {
-               if ((_wolf.skills[MonsterSkillData.KIND_REINCARNATE]).isLoaded == false) {
-                  return false;
-               }
-            }
-         }
-      }
-      MapTimer.getOnlyExample().loadSound();
-      return true;
-   }
 
    get difficultyDream() {
       return Tools.getValueByIndex(GameMap.currentMap.score, GlobalData.$_dream_wolf_hard_ness);

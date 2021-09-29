@@ -93,7 +93,7 @@
         <section data-section="user" class="hide">
             <div class="content" style="cursor: default;">
                 <h1>玩家数据</h1>
-                <p><label>等级：<input name="level" type="number" min="1" value="1"></label></p>
+                <p><label>等级：<input name="level" type="number" min="1" value="1" style="width: 3em;"></label></p>
                 <p><label>升级经验：<label name="max-exp"></label></label></p>
                 <p><label>力量：<label name="power"></label></label></p>
                 <p><label>连升等级：<label name="upgrade-level"></label></label></p>
@@ -247,12 +247,13 @@
                         $this.find('[name="skillInfo"]').html(tower.getInfoHtml());
 
                         let _td=tower.towerData;
+                        let _tp=num=>toApprecision(num, 6);
                         $this.find('[name="bv-formula"]').html(formatKatex(
                             `\\displaystyle{\\mathrm{buildValue}(n)=${_td.buildValueA}+${_td.buildValueB}n+${_td.buildValueC}n^2}`));
                         $this.find('[name="bc-formula"]').html(formatKatex(
                             `\\displaystyle{\\mathrm{buildCost}(n)=${_td.buildCostA}+${_td.buildCostB}n+${_td.buildCostC}n^2}`));
                             $this.find('[name="vc-formula"]').html(formatKatex(
-                            `\\displaystyle{\\mathrm{valueCost}(n)=[${_td.buildCost-_td.buildCostA-_td.buildCostB-_td.buildCostC}+${_td.buildCostA+_td.buildCostB/2+_td.buildCostC/6}n+${_td.buildCostB/2+_td.buildCostC/2}n^2+${_td.buildCostC/3}n^3]}`));
+                            `\\displaystyle{\\mathrm{valueCost}(n)=[${_tp(_td.buildCost-_td.buildCostA-_td.buildCostB-_td.buildCostC)}+${_tp(_td.buildCostA+_td.buildCostB/2+_td.buildCostC/6)}n+${_tp(_td.buildCostB/2+_td.buildCostC/2)}n^2+${_tp(_td.buildCostC/3)}n^3]}`));
                     }
 
                     function calcBuildTime() {
@@ -445,6 +446,9 @@
                     <label>地图</label>
                     <select name="umap-id"></select>
                     <label name="umap-diff">难度系数：</label>
+                    &emsp;
+                    <label>引狼到</label>
+                    <select name="umap-id2"></select>
                 </p>
                 <p>
                     <label>该地图的狼：</label>
@@ -461,7 +465,7 @@
                 </p>
                 <p>
                     <label>进度</label>
-                    <input name="score" type="number" min=0 value=0>
+                    <input name="score" type="number" min=0 value=0 style="width: 4em;">
                     <label name="pass-score">通关进度：</label>
                 </p>
                 <p>
@@ -480,7 +484,7 @@
                     <label>最大血量：</label><label name="hpMax"></label>
                 </p>
                 <p>
-                    <label>银币(估计)：<label name="pk-gold"></label></label>
+                    <label>银币(估计)：<label name="pk-gold"></label></label>&emsp;
                     <label>经验(估计)：<label name="pk-exp"></label></label>
                     <br>
                     这里采用估计公式 $y=(ap+b)\sqrt[3]{h_a+h_bx}$
@@ -512,14 +516,17 @@
                 InitLoad.ready(() => {
                     let $this = $('[data-section="umap-wolf"]');
 
-                    $this.find('[name="umap-id"]').html(
-                        _.map(GlobalData.$_map_Obj, (t, k) => [k, t["name"]]).sort((p1, p2) => {
+                    $this.find('[name="umap-id"], [name="umap-id2"]').html(
+                        GlobalData.$Maps.map(t=>`<option value=${t}>${t} ${GlobalData.$_map_Obj[t].name}</option>`)
+                        /*_.map(GlobalData.$_map_Obj, (t, k) => [k, t["name"]]).sort((p1, p2) => {
                             return compareNumber(
                                 parseInt(/(?<=m).+(?=[A-Z]*)/.exec(isAlpha(p1[0].last()) ? p1[0] : p1[0] + "A")[0], 36),
                                 parseInt(/(?<=m).+(?=[A-Z]*)/.exec(isAlpha(p2[0].last()) ? p2[0] : p2[0] + "A")[0], 36),
                             );
-                        }).maps(t => `<option value=${t[0]}>${t[0]} ${t[1]}</option>`)
+                        }).maps(t => `<option value=${t[0]}>${t[0]} ${t[1]}</option>`)*/
                     );
+                    $this.find('[name="umap-id2"]').prepend(`<option value="none">无</option>`)
+                    $this.find('[name="umap-id2"]')[0].selectedIndex=0;
 
                     $this.find('[name="wolf"]').html(
                         _.map(_.map(GlobalData.$_wolfAtt_Obj, (t, k) => [k, t["name"]])
@@ -614,7 +621,7 @@
                         
                     });
 
-                    $this.find('[name="umap-id"]').change(onMapChanged);
+                    $this.find('[name="umap-id"], [name="umap-id2"]').change(onMapChanged);
                     $this.find('[name="wolf"], [name="diff"], [name="score"]').change(calc);
                     onMapChanged();
 
@@ -651,26 +658,32 @@
                     }
 
                     function calc() {
-                        let umap_id = $this.find('[name="umap-id"] option:selected').val();
+                        let mid = $this.find('[name="umap-id"] option:selected').val();
+                        let mid2 = $this.find('[name="umap-id2"] option:selected').val();
                         let wolf_id = $this.find('[name="wolf"] option:selected').val();
                         let diff = parseFloat($this.find('[name="diff"] option:selected').val());
                         let score = parseInt($this.find('[name="score"]').val());
 
-                        let mapData = GameMap.getMapData(umap_id);
-                        let level = Math.sqrt(mapData.hardA + mapData.hardB * score);
+                        if (mid2=="none") mid2=mid;
 
-                        let wolf = new Monster(wolf_id, level, diff);
+                        let _md = GameMap.getMapData(mid); //狼来自地图
+                        let _md2 = GameMap.getMapData(mid2); //打狼地图
+                        GameMap.currentMap=new GameMap(mid2);
+                        GameMap.currentMap.score = score;
+                        let _wave = new Wave(new WaveData({ hard_ness: diff }));
+                        let _level=_wave.difficultyLevel;
+                        let wolf = _wave.generate([wolf_id])[0];
                         wolf.initSkills();
 
-                        $this.find('[name="umap-diff"]').text(`${mapData.populationMax} | ${mapData.hardA}, ${mapData.hardB}`);
+                        $this.find('[name="umap-diff"]').text(`${_md.populationMax} | ${_md2.hardA}, ${_md2.hardB}`);
                         $this.find('[name="hp-factor"]').text(`${wolf.monsterData.hpMaxA}, ${wolf.monsterData.hpMaxB}, ${wolf.monsterData.hpMaxC}`);
-                        $this.find('[name="pass-score"]').text(`${mapData.scoreMax}`);
-                        $this.find('[name="level"]').text(level.toFixed(2));
+                        $this.find('[name="pass-score"]').text(`${_md2.scoreMax}`);
+                        $this.find('[name="level"]').text(_level.toFixed(2));
                         $this.find('[name="hpMax"]').text(Math.floor(wolf.hpMax));
-                        $this.find('[name="pk-gold"]').text(Math.round((2.0045*mapData.populationMax+3.7475)*Math.pow(level, 2/3)));
-                        $this.find('[name="pk-exp"]').text(Math.round((0.2624*mapData.populationMax+6.5484)*Math.pow(level, 2/3)));
+                        $this.find('[name="pk-gold"]').text(Math.round((2.0045*_md.populationMax+3.7475)*Math.pow(_level, 2/3)));
+                        $this.find('[name="pk-exp"]').text(Math.round((0.2624*_md.populationMax+6.5484)*Math.pow(_level, 2/3)));
 
-                        showHpChart(umap_id);
+                        showHpChart(mid);
                     }
 
                     function showHpChart(mid) {
@@ -715,7 +728,7 @@
                         let _mapData = GameMap.getMapData(mid);
                         GameMap.currentMap.score = parseInt($this.find('[name="score"]').val());
                         let _wave = new Wave(new WaveData({ hard_ness: parseFloat($this.find('[name="diff"] option:selected').val()) }));
-                        let _wolfList = _mapData.monsterList.map(t => new Monster(t, _wave.difficultyLevel, _wave.difficultyValue))
+                        let _wolfList = _wave.generate(_mapData.monsterList);
                         let chart = echarts.init($(".hp-chart")[0]);
                         chart.setOption(chartOption);
                         chart.setOption({
