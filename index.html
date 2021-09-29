@@ -654,7 +654,7 @@
                                 .uniq() //这个好像没用
                                 .map(t => [MonsterManager.getOnlyExample().getData(t[0]), t[1]])
                                 .map(t => `<span value="${t[0].id}">${t[0].name}<sub>${t[1]}</sub></span>`).join("")
-                                || ""
+                            || ""
                         );
                         $this.find('[name="wolf-buttons"]').children().click(function (e) {
                             $this.find('[name="wolf"]').val(this.getAttribute("value"));
@@ -770,7 +770,7 @@
 
                     function showCharts(mid) {
                         const chartOption = {
-                            color: ["#92D050"],
+                            color: ['#92D050', '#94D8F6'],
                             title: {
                                 left: 'center',
                                 textStyle: {
@@ -779,27 +779,51 @@
                                     fontSize: 14
                                 }
                             },
-                            tooltip: {},
+                            tooltip: { show: true },
                             legend: { show: false },
                             xAxis: {
                                 type: 'category',
                                 axisTick: { alignWithLabel: true }
                             },
-                            yAxis: {
-                                type: 'value',
-                                axisLine: {
-                                    show: true,
-                                    lineStyle: { width: 1, type: 'solid' }
+                            yAxis: [
+                                {
+                                    name: '频率',
+                                    position: 'left',
+                                    type: 'value',
+                                    axisLine: {
+                                        show: true,
+                                        lineStyle: { width: 1, type: 'solid' }
+                                    },
+                                    axisTick: {
+                                        show: true,
+                                        inside: true,
+                                        length: 3,
+                                        lineStyle: { width: 1, type: 'solid' }
+                                    }
                                 },
-                                axisTick: {
-                                    show: true,
-                                    inside: true,
-                                    length: 3,
-                                    lineStyle: { width: 1, type: 'solid' }
-                                }
-                            },
-                            grid: { x1: 10, x2: 10, y: 10, y2: 20 },
-                            series: [{ type: 'bar', barWidth: '90%' }]
+                                {
+                                    name: '分布频率',
+                                    position: 'right',
+                                    type: 'value',
+                                    axisLine: {
+                                        show: true,
+                                        lineStyle: { width: 1, type: 'solid' }
+                                    },
+                                    axisTick: {
+                                        show: true,
+                                        inside: true,
+                                        length: 3,
+                                        lineStyle: { width: 1, type: 'solid' }
+                                    },
+                                    splitLine: {
+                                        show: false
+                                    }
+                                }],
+                            grid: { x1: 10, x2: 30, y: 10, y2: 20 },
+                            series: [
+                                { yAxisIndex: '0', type: 'bar', barWidth: '90%' },
+                                { yAxisIndex: '1', type: 'line', smooth: true }
+                            ]
                         };
 
                         let $chartArea = $this.find(".chart-area");
@@ -814,18 +838,25 @@
                             chart.setOption({
                                 title: { text: GlobalData.$_wolfAtt_Obj[wolfs[i]].name, },
                                 xAxis: { data: xData, max: wavegenFreq[mid].all.length - 1 },
-                                series: [{ data: wavegenFreq[mid].each[i] }]
+                                series: [
+                                    { data: wavegenFreq[mid].each[i] },
+                                    { data: _.partialSum(wavegenFreq[mid].each[i]) },
+                                ]
                             });
+                            console.log(_.partialSum(wavegenFreq[mid].each[i]))
                         }
                         {
                             $chartArea.append('<div style="width: 400px;height:150px;"></div>');
                             let chart = echarts.init($chartArea.children("div:last")[0]);
                             chart.setOption(chartOption);
                             chart.setOption({
-                                color: ["#FF7F27"],
+                                color: ['#FF7F27', '#94D8F6'],
                                 title: { text: "全部", },
                                 xAxis: { data: xData, max: wavegenFreq[mid].all.length - 1 },
-                                series: [{ data: wavegenFreq[mid].all }]
+                                series: [
+                                    { yAxisIndex: '0', name: '频率', type: 'bar', barWidth: '90%', data: wavegenFreq[mid].all },
+                                    { yAxisIndex: '1', name: '分布频率', type: 'line', smooth: true, data: _.partialSum(wavegenFreq[mid].all) }
+                                ]
                             });
                         }
                     }
