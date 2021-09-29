@@ -246,14 +246,14 @@
                         $this.find('[name="buffEffect"]').text(tower.buffEffect().toFixed(1));
                         $this.find('[name="skillInfo"]').html(tower.getInfoHtml());
 
-                        let _td=tower.towerData;
-                        let _tp=num=>toApprecision(num, 6);
+                        let _td = tower.towerData;
+                        let _tp = num => toApprecision(num, 6);
                         $this.find('[name="bv-formula"]').html(formatKatex(
                             `\\displaystyle{\\mathrm{buildValue}(n)=${_td.buildValueA}+${_td.buildValueB}n+${_td.buildValueC}n^2}`));
                         $this.find('[name="bc-formula"]').html(formatKatex(
                             `\\displaystyle{\\mathrm{buildCost}(n)=${_td.buildCostA}+${_td.buildCostB}n+${_td.buildCostC}n^2}`));
-                            $this.find('[name="vc-formula"]').html(formatKatex(
-                            `\\displaystyle{\\mathrm{valueCost}(n)=[${_tp(_td.buildCost-_td.buildCostA-_td.buildCostB-_td.buildCostC)}+${_tp(_td.buildCostA+_td.buildCostB/2+_td.buildCostC/6)}n+${_tp(_td.buildCostB/2+_td.buildCostC/2)}n^2+${_tp(_td.buildCostC/3)}n^3]}`));
+                        $this.find('[name="vc-formula"]').html(formatKatex(
+                            `\\displaystyle{\\mathrm{valueCost}(n)=[${_tp(_td.buildCost - _td.buildCostA - _td.buildCostB - _td.buildCostC)}+${_tp(_td.buildCostA + _td.buildCostB / 2 + _td.buildCostC / 6)}n+${_tp(_td.buildCostB / 2 + _td.buildCostC / 2)}n^2+${_tp(_td.buildCostC / 3)}n^3]}`));
                     }
 
                     function calcBuildTime() {
@@ -488,6 +488,10 @@
                     <label>经验(估计)：<label name="pk-exp"></label></label>
                     <br>
                     这里采用估计公式 $y=(ap+b)\sqrt[3]{h_a+h_bx}$
+                    <br>
+                    <label>总银币(估计)：<label name="pk-gold-accum"></label></label>&emsp;
+                    <label>总经验(估计)：<label name="pk-exp-accum"></label></label>
+                    （假设每波+2且不引狼）
                 </p>
                 <div class="hp-chart" style="width: 600px; height: 200px;"></div>
                 <p>
@@ -513,11 +517,16 @@
                 import { Wave } from "./js/module/map/Wave.js";
                 import { WaveData } from "./js/command/map.js";
 
+                var Global = {
+                    pk_gold_accum: {},
+                    pk_exp_accum: {},
+                };
+
                 InitLoad.ready(() => {
                     let $this = $('[data-section="umap-wolf"]');
 
                     $this.find('[name="umap-id"], [name="umap-id2"]').html(
-                        GlobalData.$Maps.map(t=>`<option value=${t}>${t} ${GlobalData.$_map_Obj[t].name}</option>`)
+                        GlobalData.$Maps.map(t => `<option value=${t}>${t} ${GlobalData.$_map_Obj[t].name}</option>`)
                         /*_.map(GlobalData.$_map_Obj, (t, k) => [k, t["name"]]).sort((p1, p2) => {
                             return compareNumber(
                                 parseInt(/(?<=m).+(?=[A-Z]*)/.exec(isAlpha(p1[0].last()) ? p1[0] : p1[0] + "A")[0], 36),
@@ -526,7 +535,7 @@
                         }).maps(t => `<option value=${t[0]}>${t[0]} ${t[1]}</option>`)*/
                     );
                     $this.find('[name="umap-id2"]').prepend(`<option value="none">无</option>`)
-                    $this.find('[name="umap-id2"]')[0].selectedIndex=0;
+                    $this.find('[name="umap-id2"]')[0].selectedIndex = 0;
 
                     $this.find('[name="wolf"]').html(
                         _.map(_.map(GlobalData.$_wolfAtt_Obj, (t, k) => [k, t["name"]])
@@ -600,7 +609,7 @@
                                 for (let i = 0; remCnt >= 0 && remHp >= -count && remPop >= 0; i++) {
                                     c[c.length - 1] = i;
                                     rec(d + 1, remCnt, remHp, remPop, c);
-                                    remCnt --;
+                                    remCnt--;
                                     remHp -= wolfHp[d];
                                     remPop -= wolfPop[d];
                                 }
@@ -609,16 +618,16 @@
                         }
                         rec(0, count, hpTotal, _mapData.populationMax, []);
 
-                        if (ans.length>=1) {
+                        if (ans.length >= 1) {
                             showWaveChart(mid, _wolfList.map(t => t.monsterData.name), ans[0][0]);
-                            if (ans.length>1) {
+                            if (ans.length > 1) {
                                 window.warn(`有${ans.length}个可行解，只显示第一个！`);
                                 console.log(ans);
                             }
                         } else {
                             window.alert("无可行解！请检查参数正确性。");
                         }
-                        
+
                     });
 
                     $this.find('[name="umap-id"], [name="umap-id2"]').change(onMapChanged);
@@ -641,10 +650,11 @@
                         );
                         $this.find('[name="boss-buttons"]').html(
                             GlobalData.$_map_Obj[mid].random_boss
-                                .map(t => [t[1], t[2]])
+                                ?.map(t => [t[1], t[2]])
                                 .uniq() //这个好像没用
                                 .map(t => [MonsterManager.getOnlyExample().getData(t[0]), t[1]])
                                 .map(t => `<span value="${t[0].id}">${t[0].name}<sub>${t[1]}</sub></span>`).join("")
+                                || ""
                         );
                         $this.find('[name="wolf-buttons"]').children().click(function (e) {
                             $this.find('[name="wolf"]').val(this.getAttribute("value"));
@@ -664,14 +674,14 @@
                         let diff = parseFloat($this.find('[name="diff"] option:selected').val());
                         let score = parseInt($this.find('[name="score"]').val());
 
-                        if (mid2=="none") mid2=mid;
+                        if (mid2 == "none") mid2 = mid;
 
                         let _md = GameMap.getMapData(mid); //狼来自地图
                         let _md2 = GameMap.getMapData(mid2); //打狼地图
-                        GameMap.currentMap=new GameMap(mid2);
+                        GameMap.currentMap = new GameMap(mid2);
                         GameMap.currentMap.score = score;
                         let _wave = new Wave(new WaveData({ hard_ness: diff }));
-                        let _level=_wave.difficultyLevel;
+                        let _level = _wave.difficultyLevel;
                         let wolf = _wave.generate([wolf_id])[0];
                         wolf.initSkills();
 
@@ -680,10 +690,30 @@
                         $this.find('[name="pass-score"]').text(`${_md2.scoreMax}`);
                         $this.find('[name="level"]').text(_level.toFixed(2));
                         $this.find('[name="hpMax"]').text(Math.floor(wolf.hpMax));
-                        $this.find('[name="pk-gold"]').text(Math.round((2.0045*_md.populationMax+3.7475)*Math.pow(_level, 2/3)));
-                        $this.find('[name="pk-exp"]').text(Math.round((0.2624*_md.populationMax+6.5484)*Math.pow(_level, 2/3)));
+                        $this.find('[name="pk-gold"]').text(calcPKGold(_level));
+                        $this.find('[name="pk-exp"]').text(calcPKExp(_level));
+
+                        calcAccumulative();
+                        $this.find('[name="pk-gold-accum"]').text(Global.pk_gold_accum[mid]);
+                        $this.find('[name="pk-exp-accum"]').text(Global.pk_exp_accum[mid]);
 
                         showHpChart(mid);
+
+                        function calcPKGold(_level) {
+                            return Math.round((2.0045 * _md.populationMax + 3.7475) * Math.pow(_level, 2 / 3));
+                        }
+                        function calcPKExp(_level) {
+                            return Math.round((0.2624 * _md.populationMax + 6.5484) * Math.pow(_level, 2 / 3));
+                        }
+                        function calcAccumulative() {
+                            if (Global.pk_gold_accum[mid]) return;
+                            Global.pk_gold_accum[mid] = Global.pk_exp_accum[mid] = 0;
+                            for (let i = 0; i <= _md.scoreMax; i += 2) {
+                                let _level = Math.sqrt(_md.hardA + _md.hardB * i);
+                                Global.pk_gold_accum[mid] += calcPKGold(_level);
+                                Global.pk_exp_accum[mid] += calcPKExp(_level);
+                            }
+                        }
                     }
 
                     function showHpChart(mid) {
