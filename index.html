@@ -779,7 +779,12 @@
                                     fontSize: 14
                                 }
                             },
-                            tooltip: { show: true },
+                            tooltip: {
+                                show: true,
+                                formatter: (params) => {
+                                    return params.marker + params.name + "&emsp;" + "<b>" + toApprecision(params.data, 6) + "</b>";
+                                }
+                            },
                             legend: { show: false },
                             xAxis: {
                                 type: 'category',
@@ -854,8 +859,8 @@
                                 title: { text: "全部", },
                                 xAxis: { data: xData, max: wavegenFreq[mid].all.length - 1 },
                                 series: [
-                                    { yAxisIndex: '0', name: '频率', type: 'bar', barWidth: '90%', data: wavegenFreq[mid].all },
-                                    { yAxisIndex: '1', name: '分布频率', type: 'line', smooth: true, data: _.partialSum(wavegenFreq[mid].all) }
+                                    { data: wavegenFreq[mid].all },
+                                    { data: _.partialSum(wavegenFreq[mid].all) }
                                 ]
                             });
                         }
