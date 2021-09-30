@@ -3,6 +3,7 @@ _.maps = function (list, iteratee, sep = "") { return _.map(list, iteratee).join
 
 Array.prototype.groupBy = function (iteratee, context) { return _.groupBy(this, iteratee, context); };
 Array.prototype.sortBy = function (iteratee, context) { return _.sortBy(this, iteratee, context); };
+Array.prototype.numSortBy = function (iteratee) { return this.sort((a, b) => a[iteratee] - b[iteratee]); }
 Array.prototype.uniq = function (isSorted, iteratee) { return _.uniq(this, isSorted, iteratee); };
 Array.prototype.maps = function (callbackfn, sep = "") { return this.map(callbackfn).join(sep); };
 Array.prototype.sum = function (pred = t => t, initial = 0) {

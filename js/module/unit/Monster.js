@@ -151,7 +151,7 @@ export class Monster extends BaseUnit {
         this.dowerSkills = _dowerSkills;
         this.learnSkills = _learnSkills;
         if (this.isTame) {
-            initSkills();
+            this.initSkills();
         }
     }
 
@@ -182,7 +182,7 @@ export class Monster extends BaseUnit {
         let _allSkillsScore = 1;
         let _allSkills = this.getAllSkills();
         for (i = 0; i < _allSkills.length; i++) {
-            _allSkillsScore *= this.getSkillScore(_allSkills[i][SKILL_ID], _allSkills[i][SKILL_LEVEL]);
+            _allSkillsScore *= this.getSkillScore(_allSkills[i][BaseUnit.SKILL_ID], _allSkills[i][BaseUnit.SKILL_LEVEL]);
         }
         return _allSkillsScore;
     }
@@ -276,7 +276,7 @@ export class Monster extends BaseUnit {
         for (i = 0; i < _skillList.length; i++) {
             _skill = _skillList[i];
             _info = _skill.skillInfo;
-            console.log(_info, _skill.skillTag1,  _skill.skillTag2,  _skill.skillTag3, _skill.level)
+            console.log(_info, _skill.skillTag1, _skill.skillTag2, _skill.skillTag3, _skill.level)
             if (_info != "") {
                 _skillInfo += _info;
             }
@@ -288,6 +288,13 @@ export class Monster extends BaseUnit {
         }*/
         //console.log(_skillInfo)
         return _skillInfo;
+    }
+
+    get isTame() {
+        if (this.dowerSkills || this.learnSkills) {
+            return true;
+        }
+        return false;
     }
 
 }

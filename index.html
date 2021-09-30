@@ -48,6 +48,7 @@
             <li><a data-section="umaps">地图数据</a></li>
             <li><a data-section="umap-wolf">前线地图的狼</a></li>
             <li><a data-section="wolf-skills">狼技能</a></li>
+            <li><a data-section="wolf-calc">驯化狼计算</a></li>
             <li><a data-section="research-notes">研究笔记</a></li>
         </ul>
     </aside>
@@ -848,7 +849,6 @@
                                     { data: _.partialSum(wavegenFreq[mid].each[i]) },
                                 ]
                             });
-                            console.log(_.partialSum(wavegenFreq[mid].each[i]))
                         }
                         {
                             $chartArea.append('<div style="width: 400px;height:150px;"></div>');
@@ -959,10 +959,8 @@
 
                     let skills = _.map(_.groupBy(GlobalData.$_skillAtt_Obj.monsterSkill, t => t.kindId),
                         (t, k) => [k, t.sortBy("id")]).sortBy(0).map(t => t[1]);
-                    console.log(skills)
 
                     let owners = _.map(GlobalData.$_wolfAtt_Obj, (t, k) => t.skills.map(u => [u.skid, t.name.replace(/\w+\^/, ""), u.lev])).flat().groupBy(0);
-                    console.log(owners);
                     $this.find("table tbody").html(
                         skills.map(t => t.map((u, i) =>
                             `<tr>
@@ -973,6 +971,185 @@
                                 <td class="align-left">${owners[u.id]?.map(s => `${s[1]}<sup>${s[2]}</sup>`) || ""}</td>
                             </tr>`))
                     );
+
+                });
+
+            </script>
+        </section>
+
+        <section data-section="wolf-calc" class="hide">
+            <style>
+                [data-section="wolf-calc"] table[name="skill-list"] select {
+                    width: 100%;
+                }
+            </style>
+
+            <div class="content">
+                <h1>狼相关计算</h1>
+                <p><label>狼：<select name="wolf"></select></label></p>
+                <p>
+                    <label>等级：<input type="number" name="level" min="1" value="1" style="width: 4em;"></label>&emsp;
+                    <label>最高等级：<label name="level-max"></label>
+                </p>
+                <p><label>升级经验：<label name="exp-max"></label></label></p>
+                <p><label>血量：<label name="hp"></label></label></p>
+                <p><label>速度：<label name="speed"></label></label></p>
+                <p><label>实力：<label name="power"></label></label></p>
+                <p>
+                    <span>技能</span>
+                <table name="skill-list" class="pure-table">
+                    <thead>
+                        <tr>
+                            <th title="kindId">kindId</th>
+                            <th title="id">id</th>
+                            <th title="name">name</th>
+                            <th title="level">level</th>
+                            <th title="levelMax">levelMax</th>
+                            <th title="score">score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                    <tbody>
+                        <tr>
+                            <td title="kindId" colspan="5" style="text-align: center;">
+                                <button name="btn-add">增加</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                </p>
+            </div>
+
+            <script type="module">
+                import { InitLoad } from "./js/InitLoad.js";
+                import { GlobalData } from "./js/ado/GlobalData.js";
+                import { Monster } from "./js/module/unit/Monster.js";
+                import { MonsterSkill } from "./js/module/skill.js";
+
+                InitLoad.ready(() => {
+                    let $this = $('[data-section="wolf-calc"]');
+
+                    var skillDict = _.groupBy(GlobalData.$_skillAtt_Obj.monsterSkill, t => t.kindId);
+                    _.each(skillDict, (t, k) => skillDict[k] = t.sortBy("id"))
+                    var skills = _.map(_.groupBy(GlobalData.$_skillAtt_Obj.monsterSkill, t => t.kindId),
+                        (t, k) => [k, t.sortBy("id")]).sortBy(0).map(t => t[1]);
+                    var skillSelect1 =
+                        $(`<select>${Object.keys(skillDict).sort().map(t => `<option value="${t}">${t}</option>`).join("")}</select>`);
+                    var skillSelect2 = _.mapObject(skillDict, v =>
+                        $(`<select>${v.map(t => `<option value="${t.id}">${t.id}</option>`).join("")}</select>`));
+                    var defaultSkill = new MonsterSkill("WeakFire_X1", 1);
+
+                    $this.find('[name="wolf"]').html(
+                        _.map(_.map(GlobalData.$_wolfAtt_Obj, (t, k) => [k, t["name"]])
+                            .groupBy(t => t[1].includes("camp") ? "防线" : (t[0].includes("D_") ? "噩梦" : "前线"))
+                            , (t, k) => `<optgroup label="${k}">${t.sortBy(0).maps(s => `<option value=${s[0]}>${s[1].includes("^") ? s[1].takeFrom("^", 1) : s[1]
+                                }</option>`)
+                                }</optgroup>`)
+                    );
+
+                    $this.find('[name="wolf"]').change(() => initSkillList());
+                    $this.find('[name="level"]').change(() => recalcPower());
+                    $this.find('[name="btn-add"]').click(() => {
+                        let t = defaultSkill;
+                        $this.find('[name="skill-list"] tbody:eq(0)').append(
+                            `<tr>
+                                <td>${skillSelect1.clone().find(`option[value='${t.data.kindId}']`).attr("selected", true).parent()[0].outerHTML}</td>
+                                <td>${skillSelect2[t.data.kindId].clone().find(`option[value='${t.data.id}']`).attr("selected", true).parent()[0].outerHTML}</td>
+                                <td>${t.data.name}</td>
+                                <td><input type="number" min="1" max="${t.levelMax}" value="${t.level}" style="width:3em"></td>
+                                <td>${t.levelMax}</td>
+                                <td>${t.skillScore}</td>
+                            </tr>`
+                        ).children("tr:last").on("change", "td:eq(0) select", function (e) {
+                            let $next = $(this).parent().next().children("select");
+                            let _kindId = $(this).val();
+                            $next.parent().html(skillSelect2[_kindId].clone()[0].outerHTML)
+                            $next[0].selectedIndex = 0;
+                            updateSkillInfo($(this).parent().parent());
+                        }).on("change", "td:eq(1) select", function (e) {
+                            updateSkillInfo($(this).parent().parent());
+                        }).on("change", "td:eq(3) input", function (e) {
+                            updateSkillInfo2($(this).parent().parent());
+                        });
+                        recalcPower();
+                    });
+
+                    $this.find('[name="wolf"]').val("al")
+                    initSkillList("al");
+                    function initSkillList(_wid) {
+                        _wid ||= $this.find('[name="wolf"]').val();
+                        let _level = $this.find('[name="level"]').val();
+                        let _wolf = new Monster(_wid, _level);
+                        _wolf.initSkills();
+                        let _skills = _.toArray(_wolf.skills).numSortBy("index");
+
+                        //这里不适合区分先后天技
+                        //$this.find('[name="level-max"]').html(_wolf.levelMax);
+                        //$this.find('[name="exp-max"]').html(_wolf.expMax);
+                        //$this.find('[name="hp"]').html(_wolf.hpMax);
+                        $this.find('[name="speed"]').html(_wolf.monsterData.speedBase);
+                        //$this.find('[name="power"]').html(_wolf.power);
+                        //console.log(_skills.map(t =>$(skillSelect1).clone(true).find("option[text='pxx']").parent()[0].outerHTML))
+                        $this.find('[name="skill-list"] tbody:eq(0)').html(
+                            _skills.map(t =>
+                                `<tr>
+                                    <td>${skillSelect1.clone().find(`option[value='${t.data.kindId}']`).attr("selected", true).parent()[0].outerHTML}</td>
+                                    <td>${skillSelect2[t.data.kindId].clone().find(`option[value='${t.data.id}']`).attr("selected", true).parent()[0].outerHTML}</td>
+                                    <td>${t.data.name}</td>
+                                    <td><input type="number" min="1" max="${t.levelMax}" value="${t.level}" style="width:3em"></td>
+                                    <td>${t.levelMax}</td>
+                                    <td>${t.skillScore}</td>
+                                </tr>`).join("")
+                        );
+
+                        $this.find('[name="skill-list"] tbody:eq(0) tr').on("change", "td:eq(0) select", function (e) {
+                            let $next = $(this).parent().next().children("select");
+                            let _kindId = $(this).val();
+                            $next.parent().html(skillSelect2[_kindId].clone()[0].outerHTML)
+                            $next[0].selectedIndex = 0;
+                            updateSkillInfo($(this).parent().parent());
+                        }).on("change", "td:eq(1) select", function (e) {
+                            updateSkillInfo($(this).parent().parent());
+                        }).on("change", "td:eq(3) input", function (e) {
+                            updateSkillInfo2($(this).parent().parent());
+                        });
+
+                        recalcPower();
+
+                    }
+
+                    function updateSkillInfo($tr) {
+                        let _id = $tr.find("td:eq(1) select").val();
+                        let _level = $tr.find("td:eq(3) input").val();
+                        let _skill = new MonsterSkill(_id, _level);
+                        $tr.find("td:eq(2)").text(_skill.data.name);
+                        $tr.find("td:eq(3) input").val(1).attr("max", _skill.levelMax);
+                        $tr.find("td:eq(4)").text(_skill.levelMax);
+                        $tr.find("td:eq(5)").text(_skill.skillScore);
+                        recalcPower();
+                    }
+                    function updateSkillInfo2($tr) {
+                        let _id = $tr.find("td:eq(1) select").val();
+                        let _level = $tr.find("td:eq(3) input").val();
+                        let _skill = new MonsterSkill(_id, _level);
+                        $tr.find("td:eq(5)").text(_skill.skillScore);
+                        recalcPower();
+                    }
+                    function recalcPower() {
+                        let _downerSkills = $this.find('[name="skill-list"] tbody:eq(0) tr').map(
+                            (i, t) => ({
+                                skid: $(t).find("td:eq(1) select").val(),
+                                lev: parseInt($(t).find("td:eq(3) input").val())
+                            }));
+
+                        let _wid = $this.find('[name="wolf"]').val();
+                        let _level = $this.find('[name="level"]').val();
+                        let _wolf = new Monster(_wid, _level, 1, 0, _downerSkills, []);
+                        $this.find('[name="power"]').html(_wolf.power);
+                        $this.find('[name="hp"]').html(_wolf.hpMax);
+                        $this.find('[name="exp-max"]').html(_wolf.expMax);
+                    }
 
                 });
 

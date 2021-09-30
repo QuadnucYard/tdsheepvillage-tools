@@ -1,4 +1,5 @@
 import { BaseModule } from "./BaseModule.js";
+import { GlobalData } from "../ado/GlobalData.js";
 import { GlobalDataGetValue } from "../ado/GlobalDataGetValue.js"
 import { SkillsPackageManager } from "../command/skill.js";
 import { SkillManager } from "../command/skill.js";
@@ -820,7 +821,7 @@ export class MonsterSkill extends BaseSkill {
     static PHOTO_HEIGHT = 34;
     static PHOTO_ROUND = 8;
     monster;
-    m_levelMax;
+    m_levelMax = 0;
 
     constructor(_id, _level, _monster, _isTest = false) {
         super(_id, _level, _isTest);
