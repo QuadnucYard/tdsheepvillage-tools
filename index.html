@@ -411,7 +411,7 @@
                             [GlobalData.$_wolfAtt_Obj[t[1]].name, t[0], t[2], Object.entries(t[3].properties.card)[0]]).groupBy(0), (t, k) =>
                             `${k}{${t.maps(u => `<sub>${u[1]}</sub>${u[2]},${GlobalData.$_global_properties.card[u[3][0]].name.takeFrom('^', 1)}*${u[3][1]}`, "; ")}}`
                         ).join(", ") || ""}</td>
-                            <td class="align-left">${t.boss.map(t => GlobalData.$_wolfAtt_Obj[t]?.name)}</td>
+                            <td class="align-left"><b>[${t.boss.sum(t => GlobalData.$_wolfAtt_Obj[t]?.pop)}]</b> ${t.boss.map(t => GlobalData.$_wolfAtt_Obj[t]?.name)}</td>
                         </tr>`
                     )(k, GlobalData.$_map_Obj[k])).join(", "))
                     $this.find(".content table tbody tr").click(function (e) {
