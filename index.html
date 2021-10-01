@@ -339,7 +339,6 @@
                         let _htmlTextArr = [];
 
                         _htmlTextArr.push(getSkillSign(_skill) + " " + formatHtml(_skill.name, 0x000040, true, "") + "&nbsp;");
-                        _htmlTextArr.push(formatHtml(`Lv${_skill.level} `, 0x000040, true, ""));
                         _htmlTextArr.push(formatHtml(`[${_skill.data.id}] `, 0x777777, true, "smaller"));
                         _htmlTextArr.push(formatHtml(_skill.skillInfo, 0x333333, false, "smaller"));
                         if (_skill.skillTag1) _htmlTextArr.push(formatHtml(_skill.skillTag1, _tagColor, false, "small"));
@@ -979,8 +978,24 @@
 
         <section data-section="wolf-calc" class="hide">
             <style>
+                [data-section="wolf-calc"] table[name="skill-list"] {
+                    table-layout: fixed;
+                }
+
                 [data-section="wolf-calc"] table[name="skill-list"] select {
                     width: 100%;
+                }
+
+                [data-section="wolf-calc"] table[name="skill-list"] thead tr th:nth-child(1) {
+                    width: 9em;
+                }
+
+                [data-section="wolf-calc"] table[name="skill-list"] thead tr th:nth-child(2) {
+                    width: 11em;
+                }
+
+                [data-section="wolf-calc"] table[name="skill-list"] thead tr th:nth-child(3) {
+                    width: 6em;
                 }
             </style>
 
@@ -1006,13 +1021,14 @@
                             <th title="level">level</th>
                             <th title="levelMax">levelMax</th>
                             <th title="score">score</th>
+                            <th title="info">info</th>
                         </tr>
                     </thead>
                     <tbody>
                     </tbody>
                     <tbody>
                         <tr>
-                            <td title="kindId" colspan="5" style="text-align: center;">
+                            <td title="kindId" colspan="6" style="text-align: center;">
                                 <button name="btn-add">增加</button>
                             </td>
                         </tr>
@@ -1038,7 +1054,7 @@
                         $(`<select>${Object.keys(skillDict).sort().map(t => `<option value="${t}">${t}</option>`).join("")}</select>`);
                     var skillSelect2 = _.mapObject(skillDict, v =>
                         $(`<select>${v.map(t => `<option value="${t.id}">${t.id}</option>`).join("")}</select>`));
-                    var defaultSkill = new MonsterSkill("WeakFire_X1", 1);
+                    var defaultSkill = new MonsterSkill("WeakFire_X1", 1).getSubClasses();
 
                     $this.find('[name="wolf"]').html(
                         _.map(_.map(GlobalData.$_wolfAtt_Obj, (t, k) => [k, t["name"]])
@@ -1060,6 +1076,7 @@
                                 <td><input type="number" min="1" max="${t.levelMax}" value="${t.level}" style="width:3em"></td>
                                 <td>${t.levelMax}</td>
                                 <td>${t.skillScore}</td>
+                                <td class="align-left">${t.skillInfo}</td>
                             </tr>`
                         ).children("tr:last").on("change", "td:eq(0) select", function (e) {
                             let $next = $(this).parent().next().children("select");
@@ -1100,6 +1117,7 @@
                                     <td><input type="number" min="1" max="${t.levelMax}" value="${t.level}" style="width:3em"></td>
                                     <td>${t.levelMax}</td>
                                     <td>${t.skillScore}</td>
+                                    <td class="align-left">${t.skillInfo}</td>
                                 </tr>`).join("")
                         );
 
@@ -1122,18 +1140,20 @@
                     function updateSkillInfo($tr) {
                         let _id = $tr.find("td:eq(1) select").val();
                         let _level = $tr.find("td:eq(3) input").val();
-                        let _skill = new MonsterSkill(_id, _level);
+                        let _skill = new MonsterSkill(_id, _level).getSubClasses();
                         $tr.find("td:eq(2)").text(_skill.data.name);
                         $tr.find("td:eq(3) input").val(1).attr("max", _skill.levelMax);
                         $tr.find("td:eq(4)").text(_skill.levelMax);
                         $tr.find("td:eq(5)").text(_skill.skillScore);
+                        $tr.find("td:eq(6)").text(_skill.skillInfo);
                         recalcPower();
                     }
                     function updateSkillInfo2($tr) {
                         let _id = $tr.find("td:eq(1) select").val();
                         let _level = $tr.find("td:eq(3) input").val();
-                        let _skill = new MonsterSkill(_id, _level);
+                        let _skill = new MonsterSkill(_id, _level).getSubClasses();
                         $tr.find("td:eq(5)").text(_skill.skillScore);
+                        $tr.find("td:eq(6)").text(_skill.skillInfo);
                         recalcPower();
                     }
                     function recalcPower() {
@@ -1146,6 +1166,7 @@
                         let _wid = $this.find('[name="wolf"]').val();
                         let _level = $this.find('[name="level"]').val();
                         let _wolf = new Monster(_wid, _level, 1, 0, _downerSkills, []);
+                        $this.find('[name="level-max"]').html(_wolf.levelMax);
                         $this.find('[name="power"]').html(_wolf.power);
                         $this.find('[name="hp"]').html(_wolf.hpMax);
                         $this.find('[name="exp-max"]').html(_wolf.expMax);
