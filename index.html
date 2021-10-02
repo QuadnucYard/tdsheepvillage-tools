@@ -424,8 +424,8 @@
 
         <section data-section="umap-wolf" class="hide">
             <style>
-                [name=wolf-buttons] span,
-                [name=boss-buttons] span {
+                [name="wolf-buttons"] span,
+                [name="boss-buttons"] span {
                     user-select: none;
                     background-color: #e5eece;
                     border-radius: 4px;
@@ -434,9 +434,22 @@
                     font-size: smaller;
                 }
 
-                [name=wolf-buttons] span:hover,
-                [name=boss-buttons] span:hover {
+                [name="wolf-buttons"] span:hover,
+                [name="boss-buttons"] span:hover {
                     background-color: #f2f7e7;
+                }
+
+                [name="wave-reservation"] {
+                    font-size: smaller;
+                    text-align: center;
+                }
+
+                [name="wave-reservation"] td {
+                    padding: 2px;
+                }
+
+                [name="wave-reservation"] input {
+                    width: 4em;
                 }
             </style>
 
@@ -500,8 +513,15 @@
                             name="wave-wolf-hp" style="width: 6em;"></span>
                     <button name="btn-deduce">组成推算</button>
                 </p>
-                <p><input type="text" name="wave-data" spellcheck="false" style="width: 40em;"></p>
-                <p><input type="text" name="wave-data-raw" spellcheck="false" style="width: 40em;"></p>
+                <p style="font-size: smaller;">
+                    <label>下表为预留量</label>
+                    <button name="btn-reset-reservation">重置</button>
+                </p>
+                <table name="wave-reservation">
+                    <tbody></tbody>
+                </table>
+                <p>波：<input type="text" name="wave-data" spellcheck="false" style="width: 40em;"></p>
+                <p>波：<input type="text" name="wave-data-raw" spellcheck="false" style="width: 40em;"></p>
                 <div class="wave-histogram" style="width: 600px; height: 150px;"></div>
                 <div class="chart-area" style="position: absolute; top: 3em; right: 3em; font-size: .8em;">
                     <h2 style="text-align: center;">狼出现频率（按数量，供参考）</h2>
@@ -557,9 +577,13 @@
                         $this.find('[name="score"]').val(this.innerHTML);
                         calc();
                     });
+                    $this.find('[name="btn-reset-reservation"]').click(function (e) {
+                        $this.find('[name="wave-reservation"] input').val(0);
+                    });
                     $this.find('[name="btn-generate"]').click(function (e) {
                         let mid = $this.find('[name="umap-id"] option:selected').val();
-                        let mlist = generateWave(mid);
+                        let reservation = $this.find('[name="wave-reservation"] input').toArray().map(e => parseInt(e.value) || 0);
+                        let mlist = generateWave(mid, reservation);
                         $this.find('[name="wave-data-raw"]').val(`[${mlist.map(t => `"${t}"`)}]`);
                         $this.find('[name="wave-data"]').val(mlist.map(t => GlobalData.$_wolfAtt_Obj[t].name));
 
@@ -600,7 +624,7 @@
                                 remHp -= remCnt * wolfHp[d];
                                 remPop -= remCnt * wolfPop[d];
                                 c.push(remCnt);
-                                if (remPop == 0 && Math.round(c.map((t, i) => t * wolfHp[i]).sum() / count) == hpAvg) {
+                                if (remPop == 0 && Math.round(_.innerProduct(c, wolfHp) / count) == hpAvg) {
                                     ans.push([[...c], remHp, remPop]);
                                 }
                                 c.pop();
@@ -643,10 +667,10 @@
                     }
 
                     function showMapWolfs(mid) {
+                        let _wolfData = GlobalData.$_map_Obj[mid].wolf_proportion
+                            .map(t => MonsterManager.getOnlyExample().getData(t[1]));
                         $this.find('[name="wolf-buttons"]').html(
-                            GlobalData.$_map_Obj[mid].wolf_proportion
-                                .map(t => MonsterManager.getOnlyExample().getData(t[1]))
-                                .map(t => `<span value="${t.id}">${t.name}<sup>${t.population}</sup></span>`).join("")
+                            _wolfData.map(t => `<span value="${t.id}">${t.name}<sup>${t.population}</sup></span>`).join("")
                         );
                         $this.find('[name="boss-buttons"]').html(
                             GlobalData.$_map_Obj[mid].random_boss
@@ -665,6 +689,10 @@
                             $this.find('[name="diff"]').val($(this).children("sub").text())
                             calc();
                         });
+                        $this.find('[name="wave-reservation"] tbody').html(
+                            `<tr>${_wolfData.map(t => `<td>${t.name}</td>`).join("")}</tr>`
+                            + `<tr>${_wolfData.map(t => `<td><input type="number" value="0"></td>`).join("")}</tr>`
+                        )
                     }
 
                     function calc() {
@@ -865,9 +893,8 @@
                         }
                     }
 
-                    function generateWave(mid) {
+                    function generateWave(mid, reservation) {
                         let umap = GlobalData.$_map_Obj[mid];
-                        let one = 1.0;
                         let pop = umap.pop_max;
                         let wolfProp = umap.wolf_proportion.map(t => t[0]);
                         let wolfPop = umap.wolf_proportion.map(t => GlobalData.$_wolfAtt_Obj[t[1]].pop);
@@ -877,11 +904,21 @@
 
                         let mlist = []; // 狼组成
                         let clist = new Array(n).fill(0); // 各种狼数量
+                        if (reservation) {
+                            console.log(reservation);
+                            mlist = reservation.flatMap((t, i) => new Array(t).fill(wolfs[i]))
+                            clist = reservation;
+                            pop -= _.innerProduct(reservation, wolfPop);
+                            if (pop < 0) {
+                                window.alert("预留量不合法，请重新输入！");
+                                return [];
+                            }
+                        }
 
                         while (pop > 0) {
                             while (n > 0 && pop < wolfPop[n - 1]) n--;
                             if (n == 0) break;
-                            one = wolfProp[n - 1];
+                            let one = wolfProp[n - 1];
                             let k;
                             do {
                                 let p = Math.random() * one;
@@ -893,7 +930,7 @@
                         }
 
                         showWaveChart(mid, wolfs.map(t => GlobalData.$_wolfAtt_Obj[t].name), clist);
-                        return mlist;
+                        return reservation ? _.shuffle(mlist) : mlist;
                     }
 
                     function showWaveChart(_mid, _y, _data) {
@@ -916,7 +953,7 @@
                                 showBackground: true,
                                 backgroundStyle: { color: 'rgba(180, 180, 180, 0.2)' }
                             }],
-                            animationDuration: 100
+                            animation: false
                         };
                         let chart = echarts.init($(".wave-histogram")[0]);
                         chart.setOption(chartOption);
