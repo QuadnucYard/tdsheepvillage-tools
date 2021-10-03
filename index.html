@@ -424,8 +424,8 @@
 
         <section data-section="umap-wolf" class="hide">
             <style>
-                [name="wolf-buttons"] span,
-                [name="boss-buttons"] span {
+                [data-section="umap-wolf"] [name="wolf-buttons"] span,
+                [data-section="umap-wolf"] [name="boss-buttons"] span {
                     user-select: none;
                     background-color: #e5eece;
                     border-radius: 4px;
@@ -434,22 +434,35 @@
                     font-size: smaller;
                 }
 
-                [name="wolf-buttons"] span:hover,
-                [name="boss-buttons"] span:hover {
+                [data-section="umap-wolf"] [name="wolf-buttons"] span:hover,
+                [data-section="umap-wolf"] [name="boss-buttons"] span:hover {
                     background-color: #f2f7e7;
                 }
 
-                [name="wave-reservation"] {
+                [data-section="umap-wolf"] [name="wave-reservation"] {
                     font-size: smaller;
                     text-align: center;
                 }
 
-                [name="wave-reservation"] td {
+                [data-section="umap-wolf"] [name="wave-reservation"] td {
                     padding: 2px;
                 }
 
-                [name="wave-reservation"] input {
+                [data-section="umap-wolf"] [name="wave-reservation"] input {
                     width: 4em;
+                }
+
+                [data-section="umap-wolf"] .chart-area {
+                    position: absolute;
+                    top: 3em;
+                    right: 3em;
+                    font-size: .8em;
+                }
+
+                @media only screen and (max-width: 1200px) {
+                    [data-section="umap-wolf"] .chart-area {
+                        position: inherit;
+                    }
                 }
             </style>
 
@@ -523,7 +536,7 @@
                 <p>波：<input type="text" name="wave-data" spellcheck="false" style="width: 40em;"></p>
                 <p>波：<input type="text" name="wave-data-raw" spellcheck="false" style="width: 40em;"></p>
                 <div class="wave-histogram" style="width: 600px; height: 150px;"></div>
-                <div class="chart-area" style="position: absolute; top: 3em; right: 3em; font-size: .8em;">
+                <div class="chart-area">
                     <h2 style="text-align: center;">狼出现频率（按数量，供参考）</h2>
                 </div>
             </div>
@@ -691,7 +704,7 @@
                         });
                         $this.find('[name="wave-reservation"] tbody').html(
                             `<tr>${_wolfData.map(t => `<td>${t.name}</td>`).join("")}</tr>`
-                            + `<tr>${_wolfData.map(t => `<td><input type="number" value="0"></td>`).join("")}</tr>`
+                            + `<tr>${_wolfData.map(t => `<td><input type="number" value="0" min="0"></td>`).join("")}</tr>`
                         )
                     }
 
