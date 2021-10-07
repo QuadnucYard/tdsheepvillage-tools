@@ -11,7 +11,7 @@ window.WebFontConfig = {
 function toApprecision(num, digits) {
     let s1 = num.toString();
     let i = s1.indexOf('.');
-    return i == -1 || s1.length - i - 1 <= digits ? s1 : (s => s.substr(0, s.search(/\.?0+$$/)))(num.toFixed(digits));
+    return i == -1 || s1.length - i - 1 <= digits ? s1 : num.toFixed(digits).replace(/\.?0+$/,"");
 }
 
 function formatHtml(_str, _color = 0, _b = false, _size = 14, _font = "") {
