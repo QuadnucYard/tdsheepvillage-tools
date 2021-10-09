@@ -6,6 +6,8 @@ Array.prototype.sortBy = function (iteratee, context) { return _.sortBy(this, it
 Array.prototype.numSortBy = function (iteratee) { return this.sort((a, b) => a[iteratee] - b[iteratee]); }
 Array.prototype.uniq = function (isSorted, iteratee) { return _.uniq(this, isSorted, iteratee); };
 Array.prototype.maps = function (callbackfn, sep = "") { return this.map(callbackfn).join(sep); };
+Array.prototype.unzip = function () { return _.unzip(this); };
+
 Array.prototype.sum = function (pred = t => t, initial = 0) {
     return this.reduce((prev, cur) => prev + pred(cur), initial);
 };
