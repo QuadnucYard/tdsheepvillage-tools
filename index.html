@@ -49,6 +49,7 @@
             <li><a data-section="umap-wolf">前线地图的狼</a></li>
             <li><a data-section="wolf-skills">狼技能</a></li>
             <li><a data-section="wolf-calc">驯化狼计算</a></li>
+            <li><a data-section="random-open">随机开箱</a></li>
             <li><a data-section="research-notes">研究笔记</a></li>
         </ul>
     </aside>
@@ -1222,6 +1223,63 @@
                         $this.find('[name="exp-max"]').html(_wolf.expMax);
                     }
 
+                });
+
+            </script>
+        </section>
+
+        <section data-section="random-open" class="hide">
+            <div class="content">
+                <h1>随机开箱</h1>
+                <h2>箱子</h2>
+                <table name="baoxiang" class="pure-table">
+                    <thead>
+                        <tr>
+                            <th>id</th>
+                            <th>name</th>
+                            <th>open_num</th>
+                            <th>data</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <script type="module">
+                import { InitLoad } from "./js/InitLoad.js";
+                import { GlobalData } from "./js/ado/GlobalData.js";
+
+                InitLoad.ready(() => {
+                    let $this = $('[data-section="random-open"]');
+
+                    $this.find('[name="baoxiang"] tbody').html(
+                        _(GlobalData.$_global_properties.card).map((t,k)=>[k,t]).filter(t=> t[0].startsWith("baoxiang"))
+                            .sortBy(0).map(t=>
+                            `<tr>
+                                <td>${t[0]}</td>
+                                <td>${t[1].name}</td>
+                                <td>${t[1].open_num}</td>
+                                <td class="align-left"><ul>${t[1].data ? _(t[1].data).unzip().map((u, i)=> i==0 ? _.adjacentDifference(u) : u).unzip().map(u=>{
+                                    if (u[1]=="invite_score") {
+                                        return `<li>${u[0]}, ${u[1]},${u[2]}</li>`
+                                    } else if (u[1]=="properties") {
+                                        return `<li>${u[0]}, ${u[1]}
+                                                    <ul>${u[2].unzip().map((u, i)=> i==0 ? _.adjacentDifference(u).map(s=>toApprecision(s, 4)) : u).unzip()
+                                                        .map(s=>`<li>${s[0]}, ${s[1]}, ${JSON.stringify(s[2])}</li>`).join("")
+                                                    }</ul></li>`
+                                    }
+                                    return "";
+                                }).join("") : ""}
+                                </ul></td>
+                            </tr>`
+                        )
+                    )
+                    console.log(_(GlobalData.$_global_properties.card).map((t,k)=>[k,t]).filter(t=> t[0].startsWith("baoxiang"))
+                            .sortBy(0)[0][1].data.unzip().map((u, i)=> i==0 ? _.adjacentDifference(u) : u).unzip())
+                    console.log(_(GlobalData.$_global_properties.card).map((t,k)=>[k,t]).filter(t=> t[0].startsWith("baoxiang"))
+                            .sortBy(0).map(t=>t[1].data ? _.zip(..._(t[1].data).unzip().map(u=>[u[0],u[1], u[2]])) : ""))
+                    
+                    
                 });
 
             </script>
