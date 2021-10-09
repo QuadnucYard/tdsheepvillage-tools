@@ -47,7 +47,8 @@ const katexConfigD = {
 };
 
 function formatMarktex(str) {
-    return marked(str.replace(/\$\$[\s\S]+?\$\$/gm, f => `<p>${katex.renderToString(f.substr(2, f.length - 4), katexConfigD)}</p>`)
+    let _marked = marked.parse || marked;
+    return _marked(str.replace(/\$\$[\s\S]+?\$\$/gm, f => `<p>${katex.renderToString(f.substr(2, f.length - 4), katexConfigD)}</p>`)
         .replace(/\$[\s\S]+?\$/gm, f => `<span>${katex.renderToString(f.substr(1, f.length - 2), katexConfig)}</span>`)
     );
 }
